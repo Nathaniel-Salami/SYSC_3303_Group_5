@@ -1,4 +1,7 @@
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.Stack;
 
 public class Floor implements Runnable {
@@ -12,13 +15,25 @@ public class Floor implements Runnable {
 
 		// read floor requests from file
 		floorRequests = new Stack<>();
-
-		floorRequests.push("15:00:15:0 9 Down 1");
-		floorRequests.push("14:55:15:0 3 Up 7");
-		// floorRequests.push("14:45:15:0 7 Down 4");
-		// floorRequests.push("14:30:10:0 5 Down 1");
-		// floorRequests.push("14:10:00:0 1 Up 2");
-		// floorRequests.push("14:05:15:0 2 Up 4");
+		
+		try {
+			Scanner fileInput = new Scanner(new File("floor-commands.txt"));
+			
+			while (fileInput.hasNextLine()) {
+				floorRequests.push(fileInput.nextLine());
+			}
+			
+			fileInput.close();
+		} 
+		catch (FileNotFoundException e) {
+			System.out.println("FILE NOT FOUND");
+			// floorRequests.push("15:00:15:0 9 Down 1");
+			// floorRequests.push("14:55:15:0 3 Up 7");
+			// floorRequests.push("14:45:15:0 7 Down 4");
+			// floorRequests.push("14:30:10:0 5 Down 1");
+			// floorRequests.push("14:10:00:0 1 Up 2");
+			// floorRequests.push("14:05:15:0 2 Up 4");
+		}
 	}
 
 	private String makeFloorRequest() {
