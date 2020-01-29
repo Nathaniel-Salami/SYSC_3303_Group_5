@@ -5,9 +5,9 @@ import java.util.Scanner;
 import java.util.Stack;
 
 public class Floor implements Runnable {
-	Scheduler scheduler;
-	Stack<String> floorRequests;
-	ArrayList<String> pendingRequests;
+	private Scheduler scheduler;
+	private Stack<String> floorRequests;
+	private ArrayList<String> pendingRequests;
 
 	public Floor(Scheduler s) {
 		scheduler = s;
@@ -51,7 +51,7 @@ public class Floor implements Runnable {
 
 	@Override
 	public void run() {
-		while (scheduler.floorsVisited != scheduler.limit) {
+		while (true) {
 			// read requests(arrow button from file)
 			String fr = makeFloorRequest();
 			

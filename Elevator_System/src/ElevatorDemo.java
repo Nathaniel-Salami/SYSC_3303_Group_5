@@ -2,9 +2,7 @@
 public class ElevatorDemo {
 	public static void main (String[] args) {
 
-		int testLimit = 6;
-		
-		Scheduler scheduler = new Scheduler(testLimit);
+		Scheduler scheduler = new Scheduler();
 
 		Thread schedulerThread, floor, elevator;
 

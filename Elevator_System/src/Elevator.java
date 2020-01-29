@@ -1,22 +1,21 @@
 import java.util.PriorityQueue;
 
 public class Elevator implements Runnable {
-	Scheduler scheduler;
-	int currentFloor;
-	boolean goingUp;
+	//private int currentFloor;
+	//private boolean goingUp;
 
+	private Scheduler scheduler;
 	PriorityQueue<String> tasks;
 
 	public Elevator(Scheduler s) {
 		scheduler = s;
-		currentFloor = 1;
-		goingUp = true;
+		//currentFloor = 1;
+		//goingUp = true;
 
 		tasks = new PriorityQueue<>();
 	}
 
-	public String goToNextFloor() {
-		scheduler.floorsVisited += 1;
+	private String goToNextFloor() {
 		return tasks.poll();
 	}
 
@@ -24,7 +23,7 @@ public class Elevator implements Runnable {
 	
 	@Override
 	public void run() {
-		while (scheduler.floorsVisited != scheduler.limit) {
+		while (true) {
 			// receive floor request from scheduler 
 			if (!scheduler.getPendingR().isEmpty()) {
 				String fr = scheduler.sendToElevator();

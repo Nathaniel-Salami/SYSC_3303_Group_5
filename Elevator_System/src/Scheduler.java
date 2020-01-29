@@ -1,21 +1,16 @@
 public class Scheduler implements Runnable {
 
-	// for testing
-	int floorsVisited;
-	int limit;
-
-	final int TIME = 300;
+	private final int TIME = 300;
 
 	private String pendingR; // Request received from floor
 	private String pendingV; // Visit confirmation received from elevator
 
-	public Scheduler(int l) {
-		limit = l;
+	public Scheduler() {
 		pendingR = "";
 		pendingV = "";
 	}
 
-	private void sleep(int t) {
+	public void sleep(int t) {
 		try {
 			Thread.sleep(t);
 		} 
