@@ -16,7 +16,4 @@ public class ElevatorDemo {
 		floor.start();
 		
 	}
-	
-	//TODO
-	// fix var names
 }

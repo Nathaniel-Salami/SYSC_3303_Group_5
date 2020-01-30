@@ -67,13 +67,13 @@ public class Scheduler implements Runnable {
 
 	// send to Floor from Elevator
 	public synchronized String sendToFloor() {
-		// while (pendingV.isEmpty()) {
-		// 	try {
-		// 		wait();
-		// 	} catch (InterruptedException e) {
-		// 		return "";
-		// 	}
-		// }
+		 while (pendingV.isEmpty()) {
+		 	try {
+		 		wait();
+		 	} catch (InterruptedException e) {
+		 		return "";
+		 	}
+		 }
 
 		String out = pendingV;
 		pendingV = "";

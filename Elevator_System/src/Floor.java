@@ -1,12 +1,13 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.PriorityQueue;
 import java.util.Scanner;
 import java.util.Stack;
 
 public class Floor implements Runnable {
 	private Scheduler scheduler;
-	private Stack<String> floorRequests;
+	private PriorityQueue<String> floorRequests;
 	private ArrayList<String> pendingRequests;
 
 	public Floor(Scheduler s) {
@@ -14,13 +15,13 @@ public class Floor implements Runnable {
 		pendingRequests = new ArrayList<>();
 
 		// read floor requests from file
-		floorRequests = new Stack<>();
+		floorRequests = new PriorityQueue<>();
 		
 		try {
 			Scanner fileInput = new Scanner(new File("floor-commands.txt"));
 			
 			while (fileInput.hasNextLine()) {
-				floorRequests.push(fileInput.nextLine());
+				floorRequests.add(fileInput.nextLine());
 			}
 			
 			fileInput.close();
@@ -36,41 +37,66 @@ public class Floor implements Runnable {
 		}
 	}
 
-	private String makeFloorRequest() {
-		if (!floorRequests.empty()) {
-			String fr = floorRequests.pop();
+	public String makeFloorRequest() {
+		if (!floorRequests.isEmpty()) {
+			String fr = floorRequests.poll();
 			pendingRequests.add(fr);
 			return fr;
 		}
 		return null;
 	}
 
-	private boolean getFloorVisit(String fv) {
-		return pendingRequests.remove(fv);
+	public String getFloorVisit() {
+		String elevatorVisit = scheduler.sendToFloor();
+		pendingRequests.remove(elevatorVisit);
+		
+		return elevatorVisit;
 	}
 
 	@Override
 	public void run() {
 		while (true) {
 			// read requests(arrow button from file)
-			String fr = makeFloorRequest();
+			String request = makeFloorRequest();
 			
 			// send request to scheduler
-			if (fr != null) {
-				scheduler.receiveFromFloor(fr);
-
-				System.out.println(Thread.currentThread().getName() + " requests: " + fr);
+			if (request != null) {
+				scheduler.receiveFromFloor(request);
+				System.out.println(Thread.currentThread().getName() + " requests: " + request);
 			}
 			
-			// receive confirmation form scheduler
+			// receive confirmation from scheduler
 			if (!scheduler.getPendingV().isEmpty()) { // if there is a visited record available
-				String ev = scheduler.sendToFloor();
-
-				this.getFloorVisit(ev);
-				System.out.println(Thread.currentThread().getName() + " received: " + ev);
+				String visited = getFloorVisit();
+				
+				System.out.println(Thread.currentThread().getName() + " received: " + visited);
 			}
 			
 			
 		}
+	}
+
+	public PriorityQueue<String> getFloorRequests() {
+		return floorRequests;
+	}
+
+	public void setFloorRequests(PriorityQueue<String> floorRequests) {
+		this.floorRequests = floorRequests;
+	}
+
+	public ArrayList<String> getPendingRequests() {
+		return pendingRequests;
+	}
+
+	public void setPendingRequests(ArrayList<String> pendingRequests) {
+		this.pendingRequests = pendingRequests;
+	}
+
+	public Scheduler getScheduler() {
+		return scheduler;
+	}
+
+	public void setScheduler(Scheduler scheduler) {
+		this.scheduler = scheduler;
 	}
 }
