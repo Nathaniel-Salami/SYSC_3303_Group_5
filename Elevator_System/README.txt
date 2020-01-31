@@ -1,4 +1,4 @@
-# Iteration 0 for SYSC 3303 Real Time Concurrent Systems - Winter 2020
+# Iteration 0 - SYSC 3303 Real Time Concurrent Systems - Winter 2020
 
 Purpose: 
 	
