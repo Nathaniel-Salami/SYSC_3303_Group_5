@@ -6,7 +6,7 @@ Developers & Development Date:
 	
 
 Software organization: 
-	There are 7 .java files consisting of:
+	There are 10 .java files consisting of:
 	- Elevator.java		
    	- ElevatorDemo.java
 	- ElevatorTest.java
@@ -14,7 +14,9 @@ Software organization:
     	- FloorTest.java
     	- Scheduler.java
     	- SchedulerTest.java
-    	- (data structure/Collection class)
+    	- Event
+    	- Time
+    	- Direction
     
 	There is 1 .txt file:
 	- floor-commands.txt

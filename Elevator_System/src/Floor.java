@@ -3,25 +3,39 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 import java.util.Scanner;
-import java.util.Stack;
+
+import Storage.Event;
 
 public class Floor implements Runnable {
+	
 	private Scheduler scheduler;
-	private PriorityQueue<String> floorRequests;
-	private ArrayList<String> pendingRequests;
+	
+	public static final String FILENAME = "floor-commands.txt";
+	
+	//private PriorityQueue<String> floorRequests;
+	//private ArrayList<String> pendingRequests;
+	private PriorityQueue<Event> floorEventRequests;
+	private ArrayList<Event> pendingEventRequests;
 
 	public Floor(Scheduler s) {
 		scheduler = s;
-		pendingRequests = new ArrayList<>();
-
+		
+		//pendingRequests = new ArrayList<>();
+		pendingEventRequests = new ArrayList<>();
+		
 		// read floor requests from file
-		floorRequests = new PriorityQueue<>();
+		//floorRequests = new PriorityQueue<>();
+		floorEventRequests = new PriorityQueue<>();
 		
 		try {
-			Scanner fileInput = new Scanner(new File("floor-commands.txt"));
+			Scanner fileInput = new Scanner(new File(FILENAME));
 			
 			while (fileInput.hasNextLine()) {
-				floorRequests.add(fileInput.nextLine());
+				String line = fileInput.nextLine();
+				Event event = new Event(line);
+				
+				floorEventRequests.add(event);
+				//floorRequests.add(event.toString());
 			}
 			
 			fileInput.close();
@@ -37,18 +51,23 @@ public class Floor implements Runnable {
 		}
 	}
 
-	public String makeFloorRequest() {
-		if (!floorRequests.isEmpty()) {
-			String fr = floorRequests.poll();
-			pendingRequests.add(fr);
+	public Event makeFloorRequest() {
+		if (!floorEventRequests.isEmpty()) {
+			Event fr = floorEventRequests.poll();
+			
+			pendingEventRequests.add(fr);
+			//pendingRequests.add(fr.toString());
+			
 			return fr;
 		}
 		return null;
 	}
 
-	public String getFloorVisit() {
-		String elevatorVisit = scheduler.sendToFloor();
-		pendingRequests.remove(elevatorVisit);
+	public Event getFloorVisit() {
+		Event elevatorVisit = scheduler.sendToFloor();
+		
+		pendingEventRequests.remove(elevatorVisit);
+		//pendingRequests.remove(elevatorVisit.toString());
 		
 		return elevatorVisit;
 	}
@@ -57,26 +76,26 @@ public class Floor implements Runnable {
 	public void run() {
 		while (true) {
 			// read requests(arrow button from file)
-			String request = makeFloorRequest();
+			Event request = makeFloorRequest();
 			
 			// send request to scheduler
 			if (request != null) {
 				scheduler.receiveFromFloor(request);
-				System.out.println(Thread.currentThread().getName() + " requests: " + request);
+				System.out.println(Thread.currentThread().getName() + " requests: \t" + request);
 			}
 			
 			// receive confirmation from scheduler
-			if (!scheduler.getPendingV().isEmpty()) { // if there is a visited record available
-				String visited = getFloorVisit();
+			if (scheduler.getPendingV() != null) { // if there is a visited record available
+				Event visited = getFloorVisit();
 				
-				System.out.println(Thread.currentThread().getName() + " received: " + visited);
+				System.out.println(Thread.currentThread().getName() + " received: \t" + visited);
 			}
 			
 			
 		}
 	}
 
-	public PriorityQueue<String> getFloorRequests() {
+/*	public PriorityQueue<String> getFloorRequests() {
 		return floorRequests;
 	}
 
@@ -85,18 +104,35 @@ public class Floor implements Runnable {
 	}
 
 	public ArrayList<String> getPendingRequests() {
-		return pendingRequests;
+		return null;
+		//return pendingRequests;
 	}
 
 	public void setPendingRequests(ArrayList<String> pendingRequests) {
-		this.pendingRequests = pendingRequests;
+		//this.pendingRequests = pendingRequests;
 	}
-
+*/
 	public Scheduler getScheduler() {
 		return scheduler;
 	}
 
 	public void setScheduler(Scheduler scheduler) {
 		this.scheduler = scheduler;
+	}
+
+	public PriorityQueue<Event> getFloorEventRequests() {
+		return floorEventRequests;
+	}
+
+	public void setFloorEventRequests(PriorityQueue<Event> floorEventRequests) {
+		this.floorEventRequests = floorEventRequests;
+	}
+
+	public ArrayList<Event> getPendingEventRequests() {
+		return pendingEventRequests;
+	}
+
+	public void setPendingEventRequests(ArrayList<Event> pendingEventRequests) {
+		this.pendingEventRequests = pendingEventRequests;
 	}
 }

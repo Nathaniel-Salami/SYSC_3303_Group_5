@@ -1,13 +1,15 @@
+import Storage.Event;
+
 public class Scheduler implements Runnable {
 
 	private final int TIME = 300;
 
-	private String pendingR; // Request received from floor
-	private String pendingV; // Visit confirmation received from elevator
+	private Event pendingR; // Request received from floor
+	private Event pendingV; // Visit confirmation received from elevator
 
 	public Scheduler() {
-		pendingR = "";
-		pendingV = "";
+		pendingR = null;
+		pendingV = null;
 	}
 
 	public void sleep(int t) {
@@ -18,8 +20,9 @@ public class Scheduler implements Runnable {
 	}
 
 	// receive from Floor to Elevator
-	public synchronized void receiveFromFloor(String fr) {
-		while (!pendingR.isEmpty()) {
+	public synchronized void receiveFromFloor(Event fr) {
+		
+		while (pendingR != null) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
@@ -33,17 +36,18 @@ public class Scheduler implements Runnable {
 	}
 
 	// send to Elevator from Floor
-	public synchronized String sendToElevator() {
-		while (pendingR.isEmpty()) {
+	public synchronized Event sendToElevator() {
+		
+		while (pendingR == null) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
-				return "";
+				return null;
 			}
 		}
 
-		String out = pendingR;
-		pendingR = "";
+		Event out = pendingR;
+		pendingR = null;
 
 		sleep(TIME);
 
@@ -51,14 +55,16 @@ public class Scheduler implements Runnable {
 	}
 
 	// receive from Elevator to Floor
-	public synchronized void receiveFromElevator(String fv) {
-		while (!pendingV.isEmpty()) {
+	public synchronized void receiveFromElevator(Event fv) {
+		
+		while (pendingV != null) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
 				return;
 			}
 		}
+		
 		//pendingR = "";
 		pendingV = fv;
 
@@ -66,17 +72,18 @@ public class Scheduler implements Runnable {
 	}
 
 	// send to Floor from Elevator
-	public synchronized String sendToFloor() {
-		 while (pendingV.isEmpty()) {
+	public synchronized Event sendToFloor() {
+		
+		 while (pendingV == null) {
 		 	try {
 		 		wait();
 		 	} catch (InterruptedException e) {
-		 		return "";
+		 		return null;
 		 	}
 		 }
 
-		String out = pendingV;
-		pendingV = "";
+		Event out = pendingV;
+		pendingV = null;
 
 		sleep(TIME);
 		
@@ -94,19 +101,19 @@ public class Scheduler implements Runnable {
 		}
 	}
 
-	public String getPendingR() {
+	public Event getPendingR() {
 		return pendingR;
 	}
 
-	public void setPendingR(String pendingR) {
+	public void setPendingR(Event pendingR) {
 		this.pendingR = pendingR;
 	}
 
-	public String getPendingV() {
+	public Event getPendingV() {
 		return pendingV;
 	}
 
-	public void setPendingV(String pendingV) {
+	public void setPendingV(Event pendingV) {
 		this.pendingV = pendingV;
 	}
 	

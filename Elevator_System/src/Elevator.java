@@ -1,11 +1,14 @@
 import java.util.PriorityQueue;
 
+import Storage.Event;
+
 public class Elevator implements Runnable {
 	//private int currentFloor;
 	//private boolean goingUp;
 
 	private Scheduler scheduler;
 	private PriorityQueue<String> tasks;
+	private PriorityQueue<Event> tasksEvent;
 
 	public Elevator(Scheduler s) {
 		scheduler = s;
@@ -13,21 +16,23 @@ public class Elevator implements Runnable {
 		//goingUp = true;
 
 		tasks = new PriorityQueue<>();
+		tasksEvent = new PriorityQueue<>();
 	}
 
-	public String goToNextFloor() {
-		return tasks.poll();
+	public Event goToNextFloor() {
+		return tasksEvent.poll();
 	}
 	
-	public String recieveFLoorRequest() {
-		String request = scheduler.sendToElevator();
-		tasks.add(request);
+	public Event recieveFLoorRequest() {
+		Event request = scheduler.sendToElevator();
+		tasksEvent.add(request);
+		tasks.add(request.toString());
 		
 		return request;
 	}
 	
-	public String reportFloorVisited() {
-		String visited = goToNextFloor();
+	public Event reportFloorVisited() {
+		Event visited = goToNextFloor();
 		scheduler.receiveFromElevator(visited);
 		
 		return visited;
@@ -37,15 +42,15 @@ public class Elevator implements Runnable {
 	public void run() {
 		while (true) {
 			// receive floor request from scheduler 
-			if (!scheduler.getPendingR().isEmpty()) {
-				String request = recieveFLoorRequest();
-				System.out.println(Thread.currentThread().getName() + " received: " + request);
+			if (scheduler.getPendingR() != null) {
+				Event request = recieveFLoorRequest();
+				System.out.println(Thread.currentThread().getName() + " received:\t" + request);
 			}
 			
 			// report back to scheduler
-			if (!tasks.isEmpty()) {
-				String visited = reportFloorVisited();
-				System.out.println(Thread.currentThread().getName() + " visited: " + visited);
+			if (!tasksEvent.isEmpty()) {
+				Event visited = reportFloorVisited();
+				System.out.println(Thread.currentThread().getName() + " visited:\t" + visited);
 			}
 		}
 	}
@@ -64,5 +69,13 @@ public class Elevator implements Runnable {
 
 	public void setScheduler(Scheduler scheduler) {
 		this.scheduler = scheduler;
+	}
+
+	public PriorityQueue<Event> getTasksEvent() {
+		return tasksEvent;
+	}
+
+	public void setTasksEvent(PriorityQueue<Event> tasksEvent) {
+		this.tasksEvent = tasksEvent;
 	}
 }
