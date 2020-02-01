@@ -10,7 +10,7 @@ public class Floor implements Runnable {
 	
 	private Scheduler scheduler;
 	
-	public static final String FILENAME = "floor-commands.txt";
+	public static final String FILEPATH = "Elevator_System/floor-commands.txt";
 	
 	//private PriorityQueue<String> floorRequests;
 	//private ArrayList<String> pendingRequests;
@@ -28,7 +28,7 @@ public class Floor implements Runnable {
 		floorEventRequests = new PriorityQueue<>();
 		
 		try {
-			Scanner fileInput = new Scanner(new File(FILENAME));
+			Scanner fileInput = new Scanner(new File(FILEPATH));
 			
 			while (fileInput.hasNextLine()) {
 				String line = fileInput.nextLine();
