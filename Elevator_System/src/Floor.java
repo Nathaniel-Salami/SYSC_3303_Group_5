@@ -42,6 +42,7 @@ public class Floor implements Runnable {
 		} 
 		catch (FileNotFoundException e) {
 			System.out.println("FILE NOT FOUND");
+			System.exit(1); //Terminate JVM
 			// floorRequests.push("15:00:15:0 9 Down 1");
 			// floorRequests.push("14:55:15:0 3 Up 7");
 			// floorRequests.push("14:45:15:0 7 Down 4");
