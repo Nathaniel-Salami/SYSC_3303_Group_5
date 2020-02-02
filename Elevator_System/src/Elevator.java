@@ -3,19 +3,12 @@ import java.util.PriorityQueue;
 import Storage.Event;
 
 public class Elevator implements Runnable {
-	//private int currentFloor;
-	//private boolean goingUp;
 
 	private Scheduler scheduler;
-	private PriorityQueue<String> tasks;
 	private PriorityQueue<Event> tasksEvent;
 
 	public Elevator(Scheduler s) {
 		scheduler = s;
-		//currentFloor = 1;
-		//goingUp = true;
-
-		tasks = new PriorityQueue<>();
 		tasksEvent = new PriorityQueue<>();
 	}
 
@@ -26,7 +19,6 @@ public class Elevator implements Runnable {
 	public Event recieveFLoorRequest() {
 		Event request = scheduler.sendToElevator();
 		tasksEvent.add(request);
-		tasks.add(request.toString());
 		
 		return request;
 	}
@@ -53,14 +45,6 @@ public class Elevator implements Runnable {
 				System.out.println(Thread.currentThread().getName() + " visited:\t" + visited);
 			}
 		}
-	}
-	
-	public PriorityQueue<String> getTasks() {
-		return tasks;
-	}
-
-	public void setTasks(PriorityQueue<String> tasks) {
-		this.tasks = tasks;
 	}
 
 	public Scheduler getScheduler() {

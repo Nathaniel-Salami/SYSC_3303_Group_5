@@ -11,9 +11,7 @@ public class Floor implements Runnable {
 	private Scheduler scheduler;
 	
 	public static final String FILEPATH = "Elevator_System/floor-commands.txt";
-	
-	//private PriorityQueue<String> floorRequests;
-	//private ArrayList<String> pendingRequests;
+
 	private PriorityQueue<Event> floorEventRequests;
 	private ArrayList<Event> pendingEventRequests;
 
@@ -24,7 +22,6 @@ public class Floor implements Runnable {
 		pendingEventRequests = new ArrayList<>();
 		
 		// read floor requests from file
-		//floorRequests = new PriorityQueue<>();
 		floorEventRequests = new PriorityQueue<>();
 		
 		try {
@@ -43,12 +40,6 @@ public class Floor implements Runnable {
 		catch (FileNotFoundException e) {
 			System.out.println("FILE NOT FOUND");
 			System.exit(1); //Terminate JVM
-			// floorRequests.push("15:00:15:0 9 Down 1");
-			// floorRequests.push("14:55:15:0 3 Up 7");
-			// floorRequests.push("14:45:15:0 7 Down 4");
-			// floorRequests.push("14:30:10:0 5 Down 1");
-			// floorRequests.push("14:10:00:0 1 Up 2");
-			// floorRequests.push("14:05:15:0 2 Up 4");
 		}
 	}
 
@@ -57,7 +48,6 @@ public class Floor implements Runnable {
 			Event fr = floorEventRequests.poll();
 			
 			pendingEventRequests.add(fr);
-			//pendingRequests.add(fr.toString());
 			
 			return fr;
 		}
@@ -68,7 +58,6 @@ public class Floor implements Runnable {
 		Event elevatorVisit = scheduler.sendToFloor();
 		
 		pendingEventRequests.remove(elevatorVisit);
-		//pendingRequests.remove(elevatorVisit.toString());
 		
 		return elevatorVisit;
 	}
@@ -96,23 +85,6 @@ public class Floor implements Runnable {
 		}
 	}
 
-/*	public PriorityQueue<String> getFloorRequests() {
-		return floorRequests;
-	}
-
-	public void setFloorRequests(PriorityQueue<String> floorRequests) {
-		this.floorRequests = floorRequests;
-	}
-
-	public ArrayList<String> getPendingRequests() {
-		return null;
-		//return pendingRequests;
-	}
-
-	public void setPendingRequests(ArrayList<String> pendingRequests) {
-		//this.pendingRequests = pendingRequests;
-	}
-*/
 	public Scheduler getScheduler() {
 		return scheduler;
 	}
