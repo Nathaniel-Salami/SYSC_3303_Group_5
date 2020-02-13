@@ -1,5 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 import java.util.Scanner;
@@ -63,22 +65,23 @@ public class Floor implements Runnable {
 	}
 
 	@Override
-	public void run() {
+	public void run() {		
 		while (true) {
 			// read requests(arrow button from file)
 			Event request = makeFloorRequest();
 			
 			// send request to scheduler
-			if (request != null) {
+			if (request != null && scheduler.getPendingR() == null) {
 				scheduler.receiveFromFloor(request);
-				System.out.println(Thread.currentThread().getName() + " requests: \t" + request);
+				
+				System.out.println(ToolBox.getNow() + ": " + Thread.currentThread().getName() + " requests: \t" + request);
 			}
 			
 			// receive confirmation from scheduler
 			if (scheduler.getPendingV() != null) { // if there is a visited record available
 				Event visited = getFloorVisit();
 				
-				System.out.println(Thread.currentThread().getName() + " received: \t" + visited);
+				System.out.println(ToolBox.getNow() + ": " + Thread.currentThread().getName() + " received: \t" + visited);
 			}
 			
 			

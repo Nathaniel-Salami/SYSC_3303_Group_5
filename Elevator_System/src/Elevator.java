@@ -1,65 +1,87 @@
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.PriorityQueue;
 
 import Storage.Event;
 
 public class Elevator implements Runnable {
 
-	private Scheduler scheduler;
-	private PriorityQueue<Event> tasksEvent;
+	//private Scheduler scheduler;
+	private PriorityQueue<Event> pendingTasks;
+	private ArrayList<Event> completedTasks;
+	//private Event pendingTask;
+	private ElevatorState state;
+	private int currentFloor;
 
-	public Elevator(Scheduler s) {
-		scheduler = s;
-		tasksEvent = new PriorityQueue<>();
+	public Elevator() {
+		//scheduler = s;
+		pendingTasks = new PriorityQueue<>();
+		completedTasks = new ArrayList<Event>();
+		currentFloor = 0;
+		
+		state = ElevatorState.DOORS_OPEN;
 	}
 
 	public Event goToNextFloor() {
-		return tasksEvent.poll();
-	}
-	
-	public Event recieveFLoorRequest() {
-		Event request = scheduler.sendToElevator();
-		tasksEvent.add(request);
+		Event visited = pendingTasks.poll();
+		completedTasks.add(visited);
 		
-		return request;
-	}
-	
-	public Event reportFloorVisited() {
-		Event visited = goToNextFloor();
-		scheduler.receiveFromElevator(visited);
+		currentFloor = visited.getDestination();
 		
+		//ToolBox.sleep();
+				
 		return visited;
 	}
 	
+	public void recieveFLoorRequest(Event request) {
+		// stops elevator from doing more than 1 task, this can be changed later
+//		while (pendingTasks.size() > 0) {
+//		 	try {
+//		 		wait();
+//		 	} catch (InterruptedException e) {
+//		 		
+//		 	}
+//	 	}
+		
+		//pendingTask = request;
+		pendingTasks.add(request);
+		
+	}
+	
+	public Event reportCompletedTask() {
+		Event completed = null;
+		if (!completedTasks.isEmpty()) {
+			completed = completedTasks.remove(completedTasks.size()-1);
+		}
+		return completed;
+	}
+	
 	@Override
-	public void run() {
+	public void run() {		
 		while (true) {
-			// receive floor request from scheduler 
-			if (scheduler.getPendingR() != null) {
-				Event request = recieveFLoorRequest();
-				System.out.println(Thread.currentThread().getName() + " received:\t" + request);
-			}
-			
-			// report back to scheduler
-			if (!tasksEvent.isEmpty()) {
-				Event visited = reportFloorVisited();
-				System.out.println(Thread.currentThread().getName() + " visited:\t" + visited);
+			// perform any available tasks
+			if (pendingTasks.size() > 0) {
+				Event visited = goToNextFloor();
+				
+				System.out.println(ToolBox.getNow() + ": " + Thread.currentThread().getName() + " visited:\t" + visited);
 			}
 		}
 	}
 
-	public Scheduler getScheduler() {
-		return scheduler;
+	public PriorityQueue<Event> getPendingTasks() {
+		return pendingTasks;
 	}
 
-	public void setScheduler(Scheduler scheduler) {
-		this.scheduler = scheduler;
+	public void setPendingTasks(PriorityQueue<Event> pendingTasks) {
+		this.pendingTasks = pendingTasks;
 	}
 
-	public PriorityQueue<Event> getTasksEvent() {
-		return tasksEvent;
+	public ElevatorState getState() {
+		return state;
 	}
 
-	public void setTasksEvent(PriorityQueue<Event> tasksEvent) {
-		this.tasksEvent = tasksEvent;
+	public void setState(ElevatorState state) {
+		this.state = state;
 	}
 }

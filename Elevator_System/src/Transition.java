@@ -1,0 +1,8 @@
+public enum Transition {
+	CLOSE_DOORS,
+	OPEN_DOORS,
+	THROTTLE_UP,
+	THROTTLE_BACK,
+	BRAKE,
+	STOPPING
+}

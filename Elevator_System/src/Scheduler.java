@@ -1,22 +1,35 @@
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.PriorityQueue;
+
 import Storage.Event;
 
 public class Scheduler implements Runnable {
 
-	private final int TIME = 300;
-
 	private Event pendingR; // Request received from floor
 	private Event pendingV; // Visit confirmation received from elevator
-
-	public Scheduler() {
-		pendingR = null;
-		pendingV = null;
-	}
-
-	public void sleep(int t) {
+	
+	private Elevator elevator;
+	//private PriorityQueue<Event> pendingTasks; 
+	
+	private final static int TIME = 600;
+	
+	public static void sleep(int t) {
 		try {
 			Thread.sleep(t);
 		} 
-		catch (InterruptedException e) {}
+		catch (InterruptedException e) {
+			System.out.println("INSOMNIA");
+		}
+	}
+
+	public Scheduler(Elevator elevator) {
+		pendingR = null;
+		pendingV = null;
+		
+		this.elevator = elevator;
+		//pendingTasks = new PriorityQueue<Event>();
 	}
 
 	// receive from Floor to Elevator
@@ -29,46 +42,12 @@ public class Scheduler implements Runnable {
 				return;
 			}
 		}
+		
+		//sleep(TIME);
+		//ToolBox.sleep();
 
 		pendingR = fr;
-
-		sleep(TIME);
-	}
-
-	// send to Elevator from Floor
-	public synchronized Event sendToElevator() {
-		
-		while (pendingR == null) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				return null;
-			}
-		}
-
-		Event out = pendingR;
-		pendingR = null;
-
-		sleep(TIME);
-
-		return out;
-	}
-
-	// receive from Elevator to Floor
-	public synchronized void receiveFromElevator(Event fv) {
-		
-		while (pendingV != null) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				return;
-			}
-		}
-		
-		//pendingR = "";
-		pendingV = fv;
-
-		sleep(TIME);
+		//pendingTasks.add(pendingR);
 	}
 
 	// send to Floor from Elevator
@@ -77,6 +56,7 @@ public class Scheduler implements Runnable {
 		 while (pendingV == null) {
 		 	try {
 		 		wait();
+		 		System.out.println("floor waiting1");
 		 	} catch (InterruptedException e) {
 		 		return null;
 		 	}
@@ -85,19 +65,47 @@ public class Scheduler implements Runnable {
 		Event out = pendingV;
 		pendingV = null;
 
-		sleep(TIME);
+		//sleep(TIME);
+		//ToolBox.sleep();
 		
 		return out;
+	}
+		
+	private Elevator getBestElevator() {
+		//sleep(TIME);
+		return elevator; // only one elevator
+	}
+	
+	public Event getNextCompletedTask() {		
+		Event completed = elevator.reportCompletedTask();
+		
+		//sleep(TIME);
+		return completed;
 	}
 
 	@Override
 	public void run() {
-
+		
+		
 		while (true) {
-			// try {
-			// 	Thread.sleep(1000);
-			// } catch (InterruptedException e) {}
-			// System.out.println("R: " + pendingR + ", V: " + pendingV);
+			// send a floor request to an elevator
+			if (pendingR != null) {
+				Elevator currentElevator = getBestElevator();
+				getBestElevator().recieveFLoorRequest(pendingR);
+				
+				//ToolBox.sleep();
+				System.out.println(ToolBox.getNow() + ": " + Thread.currentThread().getName() + " sent:\t" + pendingR);
+				pendingR = null;
+			}
+			
+			// get visited report from elevator
+			Event completed = getNextCompletedTask();
+			if (completed != null) {
+				//sleep(TIME);
+				pendingV = completed;
+				
+				System.out.println(ToolBox.getNow() + ": " + Thread.currentThread().getName() + " found:\t" + pendingV);
+			}
 		}
 	}
 

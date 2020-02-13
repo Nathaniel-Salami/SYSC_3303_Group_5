@@ -1,19 +1,26 @@
+import java.util.ArrayList;
 
 public class ElevatorDemo {
 	public static void main (String[] args) {
-
-		Scheduler scheduler = new Scheduler();
+ 
+		Elevator elevator1 = new Elevator();
+		
+		Scheduler scheduler = new Scheduler(elevator1);
+		//Floor floor = new Floor(scheduler);
 
 		Thread schedulerThread, floor, elevator;
 
 		floor = new Thread(new Floor(scheduler), "Floor");
-		elevator = new Thread(new Elevator(scheduler), "Elevator");
 		
 		schedulerThread = new Thread(scheduler, "Scheduler");
-
-		schedulerThread.start();
-		elevator.start();
-		floor.start();
 		
+		elevator = new Thread(elevator1, "Elevator");
+
+		
+		elevator.start();
+		
+		schedulerThread.start();
+		
+		floor.start();	
 	}
 }
