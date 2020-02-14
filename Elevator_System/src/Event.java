@@ -1,4 +1,4 @@
-package Storage;
+
 
 public class Event implements Comparable<Event> {
 	
@@ -17,6 +17,8 @@ public class Event implements Comparable<Event> {
 			getDirection(tokens[2]);
 			setDestination(Integer.parseInt(tokens[3]));
 		}
+		
+		//System.out.println("added: " + this);
 	}
 	
 	private void getDirection(String dir) {
@@ -60,7 +62,7 @@ public class Event implements Comparable<Event> {
 	
 	@Override
 	public String toString() {
-		return String.format("%d:%d:%d:%d %d %s %d",time.getHour(),time.getMilisecond(),time.getSecond(),time.getMilisecond(),floor,direction.toString(),destination);
+		return String.format("%02d:%02d:%02d:%02d %02d %s %02d",time.getHour(),time.getMinute(),time.getSecond(),time.getMilisecond(),floor,direction.toString(),destination);
 	}
 
 	@Override

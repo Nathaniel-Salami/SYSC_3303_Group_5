@@ -3,84 +3,129 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 
-import Storage.Event;
-
 public class Elevator implements Runnable {
 
 	//private Scheduler scheduler;
-	private PriorityQueue<Event> pendingTasks;
-	private ArrayList<Event> completedTasks;
-	//private Event pendingTask;
+	//private PriorityQueue<Event> pendingTasks;
+	Event completedTask;
+	Event pendingTask;
 	private ElevatorState state;
 	private int currentFloor;
+	
+	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
 	public Elevator() {
 		//scheduler = s;
-		pendingTasks = new PriorityQueue<>();
-		completedTasks = new ArrayList<Event>();
+		pendingTask = null;
+		completedTask = null;
 		currentFloor = 0;
 		
 		state = ElevatorState.DOORS_OPEN;
 	}
-
-	public Event goToNextFloor() {
-		Event visited = pendingTasks.poll();
-		completedTasks.add(visited);
+	
+	public synchronized void recieveFLoorRequest(Event request) {
+		// stops elevator from doing more than 1 task, this can be changed later
 		
-		currentFloor = visited.getDestination();
+		while (pendingTask != null) {
+			try {
+				if (Thread.currentThread().getName() == "Scheduler") 
+					wait();
+			} catch (InterruptedException e) {
+				return;
+			}
+		}
 		
-		//ToolBox.sleep();
+		try {
+			if (Thread.currentThread().getName() == "Scheduler") 
+				Thread.sleep(500);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		this.notifyAll();
+		
+		state = state.next(Transition.CLOSE_DOORS);
+		
+		pendingTask = request;
+		
+	}
+	
+	public synchronized Event goToNextFloor() {		
+		completedTask = pendingTask;
+		
+		currentFloor = completedTask.getDestination();
+		
+		pendingTask = null;
+		
+		this.notifyAll();
+		
+		//simulate travel with state transitions
+		state = state.next(Transition.THROTTLE_UP); //accelerating
+		state = state.next(Transition.THROTTLE_BACK); //cruising
+		state = state.next(Transition.BRAKE); //decelerating
 				
+		return completedTask;
+	}
+	
+	public synchronized Event reportCompletedTask() {
+		while (completedTask == null) {
+			try {
+				if (Thread.currentThread().getName() == "Scheduler") 
+					wait();
+			} catch (InterruptedException e) {
+				return null;
+			}
+		}
+		
+		try {
+			if (Thread.currentThread().getName() == "Scheduler") 
+				Thread.sleep(500);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		this.notifyAll();
+		
+		state = state.next(Transition.OPEN_DOORS);
+		
+		Event visited = completedTask;
+		completedTask = null;
+		
 		return visited;
 	}
 	
-	public void recieveFLoorRequest(Event request) {
-		// stops elevator from doing more than 1 task, this can be changed later
-//		while (pendingTasks.size() > 0) {
-//		 	try {
-//		 		wait();
-//		 	} catch (InterruptedException e) {
-//		 		
-//		 	}
-//	 	}
-		
-		//pendingTask = request;
-		pendingTasks.add(request);
-		
-	}
-	
-	public Event reportCompletedTask() {
-		Event completed = null;
-		if (!completedTasks.isEmpty()) {
-			completed = completedTasks.remove(completedTasks.size()-1);
+	public void log() {
+		// not sure why but this "un-freezes" the thread
+		try {
+			//if (Thread.currentThread().getName() == "Elevator")
+				Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		return completed;
+		//System.out.println("ELEVATOR = "+pendingTask + " : " + completedTask);
+		System.out.println("ELEVATOR STATE " + state);
 	}
 	
 	@Override
 	public void run() {		
 		while (true) {
+			log();
+			
 			// perform any available tasks
-			if (pendingTasks.size() > 0) {
-				Event visited = goToNextFloor();
+			if (pendingTask != null) {
+				Event visited = this.goToNextFloor();
 				
-				System.out.println(ToolBox.getNow() + ": " + Thread.currentThread().getName() + " visited:\t" + visited);
+				LocalDateTime now = LocalDateTime.now();
+				System.out.println("@" + dtf.format(now) + ": " + Thread.currentThread().getName() + " visited:\t\t" + visited);
 			}
 		}
-	}
-
-	public PriorityQueue<Event> getPendingTasks() {
-		return pendingTasks;
-	}
-
-	public void setPendingTasks(PriorityQueue<Event> pendingTasks) {
-		this.pendingTasks = pendingTasks;
 	}
 
 	public ElevatorState getState() {
 		return state;
 	}
-
+ 
 	public void setState(ElevatorState state) {
 		this.state = state;
 	}

@@ -3,108 +3,123 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 
-import Storage.Event;
-
 public class Scheduler implements Runnable {
 
 	private Event pendingR; // Request received from floor
 	private Event pendingV; // Visit confirmation received from elevator
 	
 	private Elevator elevator;
-	//private PriorityQueue<Event> pendingTasks; 
 	
-	private final static int TIME = 600;
+	private final static int TIME = 300;
 	
-	public static void sleep(int t) {
-		try {
-			Thread.sleep(t);
-		} 
-		catch (InterruptedException e) {
-			System.out.println("INSOMNIA");
-		}
-	}
+	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
 	public Scheduler(Elevator elevator) {
 		pendingR = null;
 		pendingV = null;
 		
 		this.elevator = elevator;
-		//pendingTasks = new PriorityQueue<Event>();
 	}
 
 	// receive from Floor to Elevator
 	public synchronized void receiveFromFloor(Event fr) {
-		
 		while (pendingR != null) {
 			try {
-				wait();
+				if (Thread.currentThread().getName() == "Floor")
+					wait();
 			} catch (InterruptedException e) {
 				return;
 			}
 		}
 		
-		//sleep(TIME);
-		//ToolBox.sleep();
+		try {
+			//System.out.println("Floor sleeps1");
+			if (Thread.currentThread().getName() == "Floor")
+				Thread.sleep(500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		pendingR = fr;
-		//pendingTasks.add(pendingR);
 	}
 
 	// send to Floor from Elevator
 	public synchronized Event sendToFloor() {
+		while (pendingV == null) {
+			try {
+				if (Thread.currentThread().getName() == "Floor") 
+					wait();
+			} catch (InterruptedException e) {
+				return null;
+			}
+		}
 		
-		 while (pendingV == null) {
-		 	try {
-		 		wait();
-		 		System.out.println("floor waiting1");
-		 	} catch (InterruptedException e) {
-		 		return null;
-		 	}
-		 }
+		try {
+			//System.out.println("Floor sleeps2");
+			if (Thread.currentThread().getName() == "Floor") 
+				Thread.sleep(500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
-		Event out = pendingV;
+		Event temp = pendingV;
 		pendingV = null;
-
-		//sleep(TIME);
-		//ToolBox.sleep();
-		
-		return out;
+	
+		return temp;
 	}
 		
-	private Elevator getBestElevator() {
-		//sleep(TIME);
-		return elevator; // only one elevator
+	public synchronized Event sendToElevator() {
+		Event temp = pendingR;
+		elevator.recieveFLoorRequest(pendingR);
+		pendingR = null;
+		
+		this.notifyAll();
+		
+		return temp;
 	}
 	
-	public Event getNextCompletedTask() {		
+	public synchronized Event getNextCompletedTask() {		
 		Event completed = elevator.reportCompletedTask();
 		
-		//sleep(TIME);
+		this.notifyAll();
+		
 		return completed;
+	}
+	
+	public void log() {
+		// not sure why but this "un-freezes" the thread
+		try {
+			//if (Thread.currentThread().getName() == "Scheduler")
+				Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//System.out.println("SHEDULER = "+pendingR + " : " + pendingV);
 	}
 
 	@Override
 	public void run() {
 		
-		
 		while (true) {
+			log();
+			
 			// send a floor request to an elevator
 			if (pendingR != null) {
-				Elevator currentElevator = getBestElevator();
-				getBestElevator().recieveFLoorRequest(pendingR);
+				Event sent = this.sendToElevator();
 				
-				//ToolBox.sleep();
-				System.out.println(ToolBox.getNow() + ": " + Thread.currentThread().getName() + " sent:\t" + pendingR);
-				pendingR = null;
+				LocalDateTime now = LocalDateTime.now();
+				System.out.println("@" + dtf.format(now) + ": " + Thread.currentThread().getName() + " sent:\t\t" + sent);
 			}
 			
 			// get visited report from elevator
-			Event completed = getNextCompletedTask();
-			if (completed != null) {
-				//sleep(TIME);
-				pendingV = completed;
+			if (elevator.completedTask != null) {
+				pendingV = getNextCompletedTask();
 				
-				System.out.println(ToolBox.getNow() + ": " + Thread.currentThread().getName() + " found:\t" + pendingV);
+				LocalDateTime now = LocalDateTime.now();
+				System.out.println("@" + dtf.format(now) + ": " + Thread.currentThread().getName() + " received:\t" + pendingV);
 			}
 		}
 	}

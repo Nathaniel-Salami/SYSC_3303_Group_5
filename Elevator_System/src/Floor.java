@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.PriorityQueue;
 import java.util.Scanner;
 
-import Storage.Event;
-
 public class Floor implements Runnable {
 	
 	private Scheduler scheduler;
@@ -16,11 +14,12 @@ public class Floor implements Runnable {
 
 	private PriorityQueue<Event> floorEventRequests;
 	private ArrayList<Event> pendingEventRequests;
+	
+	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
 	public Floor(Scheduler s) {
 		scheduler = s;
 		
-		//pendingRequests = new ArrayList<>();
 		pendingEventRequests = new ArrayList<>();
 		
 		// read floor requests from file
@@ -34,7 +33,6 @@ public class Floor implements Runnable {
 				Event event = new Event(line);
 				
 				floorEventRequests.add(event);
-				//floorRequests.add(event.toString());
 			}
 			
 			fileInput.close();
@@ -63,28 +61,44 @@ public class Floor implements Runnable {
 		
 		return elevatorVisit;
 	}
+	
+	public void log() {
+		// not sure why but this "un-freezes" the thread
+		try {
+			//if (Thread.currentThread().getName() == "FLoor")
+				Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//System.out.println("FLOOR = "+floorEventRequests.size() + " : " + pendingEventRequests.size());
+	}
 
 	@Override
-	public void run() {		
+	public void run() {	
 		while (true) {
+			log();
+			
 			// read requests(arrow button from file)
-			Event request = makeFloorRequest();
+			Event request = this.makeFloorRequest();
 			
 			// send request to scheduler
-			if (request != null && scheduler.getPendingR() == null) {
+			//if ((request != null) && (scheduler.getPendingR() == null)) {
+			if (request != null) {				
 				scheduler.receiveFromFloor(request);
 				
-				System.out.println(ToolBox.getNow() + ": " + Thread.currentThread().getName() + " requests: \t" + request);
+				LocalDateTime now = LocalDateTime.now();
+				System.out.println("@" + dtf.format(now) + ": " + Thread.currentThread().getName() + " requests: \t\t" + request);
 			}
 			
 			// receive confirmation from scheduler
-			if (scheduler.getPendingV() != null) { // if there is a visited record available
-				Event visited = getFloorVisit();
+			//if (scheduler.getPendingV() != null) { // if there is a visited record available			
 				
-				System.out.println(ToolBox.getNow() + ": " + Thread.currentThread().getName() + " received: \t" + visited);
-			}
-			
-			
+				Event visited = this.getFloorVisit();
+				
+				LocalDateTime now = LocalDateTime.now();
+				System.out.println("@" + dtf.format(now) + ": " + Thread.currentThread().getName() + " received: \t\t" + visited);
+			//}
 		}
 	}
 
