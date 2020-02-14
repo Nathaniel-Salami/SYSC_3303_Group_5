@@ -1,3 +1,4 @@
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
@@ -12,13 +13,17 @@ public class Scheduler implements Runnable {
 	
 	SchedulerState state;
 	
+	Elevator elevator;
+	
 	ArrayList<SchedulerState> stateHistory;
 	
 	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
-	public Scheduler() {
+	public Scheduler(Elevator elevator) {
 		pendingR = null;
 		pendingV = null;
+		
+		this.elevator = elevator;
 		
 		state = SchedulerState.START;
 		stateHistory = new ArrayList<SchedulerState>();
@@ -27,18 +32,12 @@ public class Scheduler implements Runnable {
 		stateHistory.add(state);
 	}
 
-	public void sleep(int t) {
-		try {
-			Thread.sleep(t);
-		} 
-		catch (InterruptedException e) {}
-	}
-
 	// receive from Floor to Elevator
 	public synchronized void receiveFromFloor(Event fr) {
 		
 		while (pendingR != null) {
 			try {
+				//logThreadWait("receiveFromFloor");
 				wait();
 			} catch (InterruptedException e) {
 				return;
@@ -55,57 +54,12 @@ public class Scheduler implements Runnable {
 		stateHistory.add(state);
 	}
 
-	// send to Elevator from Floor
-	public synchronized Event sendToElevator() {
-		
-		while (pendingR == null) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				return null;
-			}
-		}
-
-		Event out = pendingR;
-		pendingR = null;
-
-		sleep(TIME);
-
-		this.notifyAll();
-		
-		state = state.next(Transition.SEND);
-		stateHistory.add(state);
-		
-		return out;
-	}
-
-	// receive from Elevator to Floor
-	public synchronized void receiveFromElevator(Event fv) {
-		
-		while (pendingV != null) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				return;
-			}
-		}
-		
-		//pendingR = "";
-		pendingV = fv;
-
-		sleep(TIME);
-		
-		this.notifyAll();
-		
-		state = state.next(Transition.RECEIVE);
-		stateHistory.add(state);
-	}
-
 	// send to Floor from Elevator
 	public synchronized Event sendToFloor() {
 		
 		 while (pendingV == null) {
 		 	try {
+		 		//logThreadWait("sendToFloor");
 		 		wait();
 		 	} catch (InterruptedException e) {
 		 		return null;
@@ -122,9 +76,16 @@ public class Scheduler implements Runnable {
 		changeState(Transition.SEND);
 		changeState(Transition.RECEIVE); //return to start
 		
-		System.out.println("SCHEDULER STATE: " + stateHistory);
+		//System.out.println("SCHEDULER STATE: " + stateHistory);
 		
 		return out;
+	}
+	
+	public synchronized void updatePendingValues() {
+		pendingV = pendingR;
+		pendingR = null;
+		
+		this.notifyAll();
 	}
 	
 	public void changeState(Transition t) {
@@ -136,12 +97,67 @@ public class Scheduler implements Runnable {
 	public void run() {
 
 		while (true) {
-//			 try {
-//			 	Thread.sleep(1000);
-//			 } catch (InterruptedException e) {}
-//			 System.out.println("SCHEDULER: " + stateHistory);
+			
+			try {
+				Thread.sleep(300);
+			} 
+			catch (InterruptedException e) {}
+			LocalDateTime now = LocalDateTime.now();
+			//System.out.println("@" + dtf.format(now) + " " + Thread.currentThread().getName() + ": " + pendingR + " : " + pendingV);
+			
+			//attempt to fulfill request if one is available
+			//check elevator current floor
+			if (pendingR != null) {
+				//if elevator has not picked up a passenger, move to the floor of the passenger
+				if (!elevator.loaded) {
+					//move to the floor of the passenger
+					if (elevator.currentFloor != pendingR.getFloor()) {
+						elevator.moveTo(pendingR.getFloor());
+					}
+					//elevator is already there
+					else {
+						//floor loads
+						elevator.loaded = true;
+					}
+				}
+				
+				//if the elevator is loaded but the elevator is not yet at the destination, move to the destination
+				else if (elevator.loaded) {
+					//move to the destination of the passenger
+					if (elevator.currentFloor != pendingR.getDestination()) {
+						elevator.moveTo(pendingR.getDestination());
+					}
+					//elevator is already there
+					else {
+						//floor unloads
+						elevator.loaded = false;
+						
+						updatePendingValues();
+					}
+				}
+			}
 		}
 	}
+	
+	public void logElevator() {
+		LocalDateTime now = LocalDateTime.now();
+		System.out.println("@" + dtf.format(now) + " " + Thread.currentThread().getName() + 
+				": Elevator: Floor[" + elevator.currentFloor + 
+				"] Loaded[" + elevator.loaded + "]");
+	}
+	
+	public void logThreadWait(String function) {
+		System.out.println(Thread.currentThread().getName() + " is waiting at " + function);
+	}
+
+	public void sleep(int t) {
+		try {
+			Thread.sleep(t);
+		} 
+		catch (InterruptedException e) {}
+	}
+	
+	
 
 	public Event getPendingR() {
 		return pendingR;

@@ -6,52 +6,61 @@ import java.util.PriorityQueue;
 import Storage.Event;
 
 public class Elevator implements Runnable {
-
-	private Scheduler scheduler;
-	private PriorityQueue<Event> tasksEvent;
+	
+	int currentFloor;
+	boolean goingUp;
+	boolean loaded;
 	
 	ElevatorState state;
 	ArrayList<ElevatorState> stateHistory;
 	
 	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
-	public Elevator(Scheduler s) {
-		scheduler = s;
-		tasksEvent = new PriorityQueue<>();
+	public Elevator() {
+		loaded = false;
+		currentFloor = 0;
+		goingUp = true;
 		
-		state = ElevatorState.DOORS_OPEN;
+		state = ElevatorState.DOORS_CLOSED;
 		stateHistory = new ArrayList<ElevatorState>();
 		
 		//add initial state
 		stateHistory.add(state);
 	}
-
-	public Event goToNextFloor() {
-		//simulate travel with state transitions
-		changeState(Transition.THROTTLE_UP);
-		changeState(Transition.THROTTLE_BACK);
-		changeState(Transition.BRAKE);
-		changeState(Transition.STOPPING);
+	
+	public int goUp() {
+		currentFloor++;
+		goingUp = true;
 		
-		return tasksEvent.poll();
+		return currentFloor;
 	}
 	
-	public Event recieveFLoorRequest() {
-		Event request = scheduler.sendToElevator();
-		tasksEvent.add(request);
+	public int goDown() {
+		currentFloor--;
+		goingUp = false;
 		
-		changeState(Transition.CLOSE_DOORS);
-		
-		return request;
+		return currentFloor;
 	}
 	
-	public Event reportFloorVisited() {
-		Event visited = goToNextFloor();
-		scheduler.receiveFromElevator(visited);
+	public int moveTo(int floor) {
+		//System.out.println("move to: " + floor + " from: " + currentFloor);
 		
-		changeState(Transition.OPEN_DOORS);
+		if (currentFloor > floor) { //elevator is above the requesting floor
+			goDown();
+		}
+		else {
+			goUp();
+		}
 		
-		return visited;
+		try {
+			Thread.sleep(300);
+		} 
+		catch (InterruptedException e) {}
+		
+		LocalDateTime now = LocalDateTime.now();
+		System.out.println("@" + dtf.format(now) + " " + Thread.currentThread().getName() + ": Elevator Floor[" + currentFloor + "] Loaded[" + loaded + "]");
+		
+		return currentFloor;
 	}
 	
 	public void changeState(Transition t) {
@@ -62,39 +71,16 @@ public class Elevator implements Runnable {
 	@Override
 	public void run() {
 		while (true) {
-			// receive floor request from scheduler 
-			//if (scheduler.getPendingR() != null) {
-				Event request = recieveFLoorRequest();
-				
-				LocalDateTime now = LocalDateTime.now();
-				System.out.println("@" + dtf.format(now) + " " + Thread.currentThread().getName() + " received:\t" + request);
-			//}
-			
-			// report back to scheduler
-			if (!tasksEvent.isEmpty()) {
-				Event visited = reportFloorVisited();
-				
-				now = LocalDateTime.now();
-				System.out.println("@" + dtf.format(now) + " " + Thread.currentThread().getName() + " visited:\t" + visited);
-				
-				System.out.println("ELEVATOR STATE: " + stateHistory);
-			}
+			/*
+			try {
+				Thread.sleep(1000);
+			} 
+			catch (InterruptedException e) {}
+			LocalDateTime now = LocalDateTime.now();
+			System.out.println("@" + dtf.format(now) + " " + Thread.currentThread().getName() + 
+					": Floor[" + currentFloor + 
+					"] Loaded[" + loaded + "]");
+			*/
 		}
-	}
-
-	public Scheduler getScheduler() {
-		return scheduler;
-	}
-
-	public void setScheduler(Scheduler scheduler) {
-		this.scheduler = scheduler;
-	}
-
-	public PriorityQueue<Event> getTasksEvent() {
-		return tasksEvent;
-	}
-
-	public void setTasksEvent(PriorityQueue<Event> tasksEvent) {
-		this.tasksEvent = tasksEvent;
 	}
 }

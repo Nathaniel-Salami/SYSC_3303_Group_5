@@ -110,7 +110,7 @@ public class Floor implements Runnable {
 				LocalDateTime now = LocalDateTime.now();
 				System.out.println("@" + dtf.format(now) + " " + Thread.currentThread().getName() + " received: \t" + visited);
 				
-				System.out.println("FLOOR STATE: " + stateHistory);
+				//System.out.println("FLOOR STATE: " + stateHistory);
 			//}
 			
 			

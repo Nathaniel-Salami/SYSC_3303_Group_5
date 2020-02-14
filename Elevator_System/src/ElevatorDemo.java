@@ -2,18 +2,20 @@
 public class ElevatorDemo {
 	public static void main (String[] args) {
 
-		Scheduler scheduler = new Scheduler();
-
-		Thread schedulerThread, floor, elevator;
-
-		floor = new Thread(new Floor(scheduler), "Floor");
-		elevator = new Thread(new Elevator(scheduler), "Elevator");
 		
-		schedulerThread = new Thread(scheduler, "Scheduler");
+		Elevator elevator = new Elevator();
+		Scheduler scheduler = new Scheduler(elevator);
+		Floor floor = new Floor(scheduler);
 
+		Thread schedulerThread, floorThread, elevatorThread;
+
+		elevatorThread = new Thread(elevator, "Elevator");
+		schedulerThread = new Thread(scheduler, "Scheduler");
+		floorThread = new Thread(floor, "Floor");
+		
+		elevatorThread.start();
 		schedulerThread.start();
-		elevator.start();
-		floor.start();
+		floorThread.start();
 		
 	}
 }
