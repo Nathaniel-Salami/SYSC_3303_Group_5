@@ -60,7 +60,7 @@ public class Event implements Comparable<Event> {
 	
 	@Override
 	public String toString() {
-		return String.format("%d:%d:%d:%d %d %s %d",time.getHour(),time.getMilisecond(),time.getSecond(),time.getMilisecond(),floor,direction.toString(),destination);
+		return String.format("%d:%d:%d:%d %d %s %d",time.getHour(),time.getMinute(),time.getSecond(),time.getMilisecond(),floor,direction.toString(),destination);
 	}
 
 	@Override

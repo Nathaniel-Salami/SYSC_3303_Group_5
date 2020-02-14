@@ -1,3 +1,6 @@
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+
 import Storage.Event;
 
 public class Scheduler implements Runnable {
@@ -6,10 +9,22 @@ public class Scheduler implements Runnable {
 
 	private Event pendingR; // Request received from floor
 	private Event pendingV; // Visit confirmation received from elevator
+	
+	SchedulerState state;
+	
+	ArrayList<SchedulerState> stateHistory;
+	
+	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
 	public Scheduler() {
 		pendingR = null;
 		pendingV = null;
+		
+		state = SchedulerState.START;
+		stateHistory = new ArrayList<SchedulerState>();
+		
+		//add initial state
+		stateHistory.add(state);
 	}
 
 	public void sleep(int t) {
@@ -33,6 +48,11 @@ public class Scheduler implements Runnable {
 		pendingR = fr;
 
 		sleep(TIME);
+		
+		this.notifyAll();
+		
+		state = state.next(Transition.RECEIVE);
+		stateHistory.add(state);
 	}
 
 	// send to Elevator from Floor
@@ -51,6 +71,11 @@ public class Scheduler implements Runnable {
 
 		sleep(TIME);
 
+		this.notifyAll();
+		
+		state = state.next(Transition.SEND);
+		stateHistory.add(state);
+		
 		return out;
 	}
 
@@ -69,6 +94,11 @@ public class Scheduler implements Runnable {
 		pendingV = fv;
 
 		sleep(TIME);
+		
+		this.notifyAll();
+		
+		state = state.next(Transition.RECEIVE);
+		stateHistory.add(state);
 	}
 
 	// send to Floor from Elevator
@@ -87,17 +117,29 @@ public class Scheduler implements Runnable {
 
 		sleep(TIME);
 		
+		this.notifyAll();
+		
+		changeState(Transition.SEND);
+		changeState(Transition.RECEIVE); //return to start
+		
+		System.out.println("SCHEDULER STATE: " + stateHistory);
+		
 		return out;
+	}
+	
+	public void changeState(Transition t) {
+		state = state.next(t);
+		stateHistory.add(state);
 	}
 
 	@Override
 	public void run() {
 
 		while (true) {
-			// try {
-			// 	Thread.sleep(1000);
-			// } catch (InterruptedException e) {}
-			// System.out.println("R: " + pendingR + ", V: " + pendingV);
+//			 try {
+//			 	Thread.sleep(1000);
+//			 } catch (InterruptedException e) {}
+//			 System.out.println("SCHEDULER: " + stateHistory);
 		}
 	}
 
