@@ -178,4 +178,32 @@ public class Floor implements Runnable {
 	public void setPendingEventRequests(ArrayList<Event> pendingEventRequests) {
 		this.pendingEventRequests = pendingEventRequests;
 	}
+
+	public DateTimeFormatter getDtf() {
+		return dtf;
+	}
+
+	public void setDtf(DateTimeFormatter dtf) {
+		this.dtf = dtf;
+	}
+
+	public FloorState getState() {
+		return state;
+	}
+
+	public void setState(FloorState state) {
+		this.state = state;
+	}
+
+	public ArrayList<FloorState> getStateHistory() {
+		return stateHistory;
+	}
+
+	public void setStateHistory(ArrayList<FloorState> stateHistory) {
+		this.stateHistory = stateHistory;
+	}
+
+	public static String getFilepath() {
+		return FILEPATH;
+	}
 }
