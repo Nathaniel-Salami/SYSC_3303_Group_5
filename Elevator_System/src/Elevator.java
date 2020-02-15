@@ -2,6 +2,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 //import java.util.ArrayList;
 //import java.util.PriorityQueue;
+import java.util.ArrayList;
 
 public class Elevator implements Runnable {
 
@@ -9,8 +10,10 @@ public class Elevator implements Runnable {
 	//private PriorityQueue<Event> pendingTasks;
 	Event completedTask;
 	Event pendingTask;
-	private ElevatorState state;
 	private int currentFloor;
+	
+	private ElevatorState state;
+	ArrayList<ElevatorState> stateHistory;
 	
 	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
@@ -20,7 +23,12 @@ public class Elevator implements Runnable {
 		completedTask = null;
 		currentFloor = 0;
 		
-		state = ElevatorState.DOORS_OPEN;
+		state = ElevatorState.getInitialState();
+		stateHistory = new ArrayList<>();
+		
+		//add initial state
+		stateHistory.add(state);
+		System.out.println("ELEVATOR STATE: " + state);
 	}
 	
 	public synchronized void recieveFLoorRequest(Event request) {
@@ -35,16 +43,16 @@ public class Elevator implements Runnable {
 			}
 		}
 		
-		try {
+		/*try {
 			if (Thread.currentThread().getName() == "Scheduler") 
 				Thread.sleep(500);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}
+		}*/
+		
+		changeState(Transition.CLOSE_DOORS);
 		
 		this.notifyAll();
-		
-		state = state.next(Transition.CLOSE_DOORS);
 		
 		pendingTask = request;
 		
@@ -57,12 +65,13 @@ public class Elevator implements Runnable {
 		
 		pendingTask = null;
 		
-		this.notifyAll();
-		
 		//simulate travel with state transitions
-		state = state.next(Transition.THROTTLE_UP); //accelerating
-		state = state.next(Transition.THROTTLE_BACK); //cruising
-		state = state.next(Transition.BRAKE); //decelerating
+		changeState(Transition.THROTTLE_UP);
+		changeState(Transition.THROTTLE_BACK);
+		changeState(Transition.BRAKE);
+		changeState(Transition.STOPPING);
+		
+		this.notifyAll();
 				
 		return completedTask;
 	}
@@ -84,12 +93,12 @@ public class Elevator implements Runnable {
 			e.printStackTrace();
 		}
 		
-		this.notifyAll();
-		
-		state = state.next(Transition.OPEN_DOORS);
+		changeState(Transition.OPEN_DOORS);
 		
 		Event visited = completedTask;
 		completedTask = null;
+		
+		this.notifyAll();
 		
 		return visited;
 	}
@@ -104,7 +113,22 @@ public class Elevator implements Runnable {
 			e.printStackTrace();
 		}
 		//System.out.println("ELEVATOR = "+pendingTask + " : " + completedTask);
-		System.out.println("ELEVATOR STATE " + state);
+		//System.out.println("ELEVATOR HISTOR: " + stateHistory);
+		//System.out.println("ELEVATOR STATE: " + state);
+	}
+	
+	public void changeState(Transition t) {
+		state = state.next(t);
+		stateHistory.add(state);
+		
+		System.out.println("ELEVATOR STATE: " + state);
+		
+		/*try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
 	}
 	
 	@Override

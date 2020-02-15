@@ -38,6 +38,9 @@ public enum ElevatorState {
 	};
 
 	public abstract ElevatorState next(Transition transition);
+	public static ElevatorState getInitialState() {
+		return DOORS_OPEN;
+	}
 }
 
 	

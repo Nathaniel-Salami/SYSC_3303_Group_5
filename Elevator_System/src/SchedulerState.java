@@ -1,43 +1,33 @@
 public enum SchedulerState {
-	//initial state for the elevator
-	DOORS_OPEN {
+	//initial state for the scheduler
+	WAITING_FOR_REQUEST {
 		@Override
 		public SchedulerState next(Transition transition) {
-			return DOORS_CLOSED;
+			return SELECT_ELEVATOR;
 		}
 	},
-	DOORS_CLOSED {
+	SELECT_ELEVATOR {
 		@Override
 		public SchedulerState next(Transition transition) {
-			return (transition == Transition.THROTTLE_UP) ? ACCELERATING : DOORS_OPEN;
+			return 	WAITING_FOR_REPORT;
 		}
 	},
-	ACCELERATING {
+	WAITING_FOR_REPORT {
 		@Override
 		public SchedulerState next(Transition transition) {
-				return CRUISING;
+			return SEND_ELEVATOR_REPORT;
 		}
 	},
-	CRUISING {
+	SEND_ELEVATOR_REPORT {
 		@Override
 		public SchedulerState next(Transition transition) {
-			return DECELERATING;
-		}
-	},
-	DECELERATING {
-		@Override
-		public SchedulerState next(Transition transition) {
-			return STOPPED;
-		}
-	},
-	STOPPED {
-		@Override
-		public SchedulerState next(Transition transition) {
-			return DOORS_OPEN;
+			return WAITING_FOR_REQUEST;
 		}
 	};
 
 	public abstract SchedulerState next(Transition transition);
-}
+	public static SchedulerState getInitialState() {
+		return WAITING_FOR_REQUEST;
+	}
 
-	
+}

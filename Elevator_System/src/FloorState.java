@@ -1,6 +1,12 @@
 public enum FloorState {
 	//initial state for the elevator
-	PRESS_DIRECTION {
+	INITIAL {
+		@Override
+		public FloorState next(Transition transition) {
+			return MAKE_REQUEST;
+		}
+	},
+	MAKE_REQUEST {
 		@Override
 		public FloorState next(Transition transition) {
 			return LOAD;
@@ -15,17 +21,20 @@ public enum FloorState {
 	TRAVEL {
 		@Override
 		public FloorState next(Transition transition) {
-				return UNLOAD;
+			return UNLOAD;
 		}
 	},
 	UNLOAD {
 		@Override
 		public FloorState next(Transition transition) {
-			return TRAVEL;
+			return MAKE_REQUEST;
 		}
 	};
 
 	public abstract FloorState next(Transition transition);
+	public static FloorState getInitialState() {
+		return INITIAL;
+	}
 }
 
 	

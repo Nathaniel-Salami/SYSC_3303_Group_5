@@ -13,12 +13,22 @@ public class Scheduler implements Runnable {
 	private final static int TIME = 300;
 	
 	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+	
+	SchedulerState state;
+	
+	ArrayList<SchedulerState> stateHistory;
 
 	public Scheduler(Elevator elevator) {
 		pendingR = null;
 		pendingV = null;
 		
 		this.elevator = elevator;
+		
+		state = SchedulerState.getInitialState();
+		stateHistory = new ArrayList<SchedulerState>();
+		
+		//add initial state
+		stateHistory.add(state);
 	}
 
 	// receive from Floor to Elevator
@@ -42,6 +52,8 @@ public class Scheduler implements Runnable {
 		}
 
 		pendingR = fr;
+		
+		changeState(Transition.RECEIVE);
 	}
 
 	// send to Floor from Elevator
@@ -66,6 +78,8 @@ public class Scheduler implements Runnable {
 
 		Event temp = pendingV;
 		pendingV = null;
+		
+		changeState(Transition.SEND);
 	
 		return temp;
 	}
@@ -77,15 +91,33 @@ public class Scheduler implements Runnable {
 		
 		this.notifyAll();
 		
+		changeState(Transition.SEND);
+		
 		return temp;
 	}
 	
 	public synchronized Event getNextCompletedTask() {		
 		Event completed = elevator.reportCompletedTask();
 		
+		changeState(Transition.RECEIVE);
+		
 		this.notifyAll();
 		
 		return completed;
+	}
+	
+	public void changeState(Transition t) {
+		state = state.next(t);
+		stateHistory.add(state);
+		
+		//System.out.println("SCHEDULER STATE: " + state);
+		
+		/*try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
 	}
 	
 	public void log() {
@@ -97,7 +129,9 @@ public class Scheduler implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//System.out.println("SHEDULER = "+pendingR + " : " + pendingV);
+		//System.out.println("SCHEDULER = "+pendingR + " : " + pendingV);
+		//System.out.println("SCHEDULER HISTORY: " + stateHistory);
+		System.out.println("SCHEDULER STATE: " + state);
 	}
 
 	@Override

@@ -16,9 +16,18 @@ public class Floor implements Runnable {
 	private ArrayList<Event> pendingEventRequests;
 	
 	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+	
+	FloorState state;
+	ArrayList<FloorState> stateHistory;
 
 	public Floor(Scheduler s) {
 		scheduler = s;
+		
+		state = FloorState.getInitialState();		
+		stateHistory = new ArrayList<FloorState>();
+		
+		//add initial state
+		stateHistory.add(state);
 		
 		pendingEventRequests = new ArrayList<>();
 		
@@ -45,6 +54,9 @@ public class Floor implements Runnable {
 
 	public Event makeFloorRequest() {
 		if (!floorEventRequests.isEmpty()) {
+			
+			changeState(Transition.PRESS_BUTTON);
+			
 			Event fr = floorEventRequests.poll();
 			
 			pendingEventRequests.add(fr);
@@ -55,11 +67,29 @@ public class Floor implements Runnable {
 	}
 
 	public Event getFloorVisit() {
+		
+		changeState(Transition.LEAVE);
+		//changeState(Transition.RESET);
+		
 		Event elevatorVisit = scheduler.sendToFloor();
 		
 		pendingEventRequests.remove(elevatorVisit);
 		
 		return elevatorVisit;
+	}
+	
+	public void changeState(Transition t) {
+		state = state.next(t);
+		stateHistory.add(state);
+		
+		//System.out.println("FLOOR STATE: " + state);
+		
+		/*try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
 	}
 	
 	public void log() {
@@ -72,6 +102,8 @@ public class Floor implements Runnable {
 			e.printStackTrace();
 		}
 		//System.out.println("FLOOR = "+floorEventRequests.size() + " : " + pendingEventRequests.size());
+		//System.out.println("FLOOR HISTORY: " + stateHistory);
+		System.out.println("FLOOR STATE: " + state);
 	}
 
 	@Override
@@ -83,9 +115,11 @@ public class Floor implements Runnable {
 			Event request = this.makeFloorRequest();
 			
 			// send request to scheduler
-			//if ((request != null) && (scheduler.getPendingR() == null)) {
 			if (request != null) {				
 				scheduler.receiveFromFloor(request);
+				
+				changeState(Transition.ENTER);
+				changeState(Transition.WAIT);
 				
 				LocalDateTime now = LocalDateTime.now();
 				System.out.println("@" + dtf.format(now) + ": " + Thread.currentThread().getName() + " requests: \t\t" + request);
