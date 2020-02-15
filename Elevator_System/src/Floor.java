@@ -6,6 +6,12 @@ import java.util.ArrayList;
 import java.util.PriorityQueue;
 import java.util.Scanner;
 
+/**
+ * {@summary The floor subsystem reads in events from the scheduler (time,
+ * floor, elevator number, and button). Each line of input from the Storage data
+ * structure is sent to the Scheduler}
+ */
+
 public class Floor implements Runnable {
 	
 	private Scheduler scheduler;
@@ -20,6 +26,7 @@ public class Floor implements Runnable {
 	public Floor(Scheduler s) {
 		scheduler = s;
 		
+		// event list for the floor subsystem
 		pendingEventRequests = new ArrayList<>();
 		
 		// read floor requests from file
@@ -43,6 +50,9 @@ public class Floor implements Runnable {
 		}
 	}
 
+	/*
+	 * Helper function: Simulates all button presses (from data structure)
+	 */
 	public Event makeFloorRequest() {
 		if (!floorEventRequests.isEmpty()) {
 			Event fr = floorEventRequests.poll();
@@ -62,6 +72,9 @@ public class Floor implements Runnable {
 		return elevatorVisit;
 	}
 	
+	/*
+	 * Helper function: Adds sleep statement so logs are readable
+	 */
 	public void log() {
 		// not sure why but this "un-freezes" the thread
 		try {
@@ -74,6 +87,9 @@ public class Floor implements Runnable {
 		//System.out.println("FLOOR = "+floorEventRequests.size() + " : " + pendingEventRequests.size());
 	}
 
+	/*
+	 * Run
+	 */
 	@Override
 	public void run() {	
 		while (true) {
@@ -102,6 +118,9 @@ public class Floor implements Runnable {
 		}
 	}
 
+	/*
+	 * Get & set methods for class attributes
+	 */
 	public Scheduler getScheduler() {
 		return scheduler;
 	}
