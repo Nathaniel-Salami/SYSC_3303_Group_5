@@ -2,7 +2,7 @@
 
 Purpose: The purpose of this software is to cover the intuition behind real time embedded systems through the implementation of an elevator system.
 
-Developers & Development Date: Group 5 - Febuary 15, 2020
+Developers & Development Date: Group 5 - February 15, 2020
   Nathaniel Salami
   Teodor Kirilov
   Lila Mcilveen
@@ -44,5 +44,5 @@ Set up instructions
 	All text input will be loaded, and dynamically allocated into a data structure.
 	
 Limitations:
-	- All three threads run within the same program, based on iteration specifications
+	- All three threads run within the same program, based on iteration specifications.
 
