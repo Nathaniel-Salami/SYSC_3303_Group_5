@@ -3,6 +3,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 
+/**
+ * {@summary The Scheduler is only being used as a communication channel from
+ * the Floor thread to the Elevator thread and back again.}
+ */
+
 public class Scheduler implements Runnable {
 
 	private Event pendingR; // Request received from floor
