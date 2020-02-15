@@ -79,7 +79,7 @@ public class Floor implements Runnable {
 	public Event getFloorVisit() {
 		
 		changeState(Transition.LEAVE);
-		//changeState(Transition.RESET);
+		changeState(Transition.RESET);
 		
 		Event elevatorVisit = scheduler.sendToFloor();
 		

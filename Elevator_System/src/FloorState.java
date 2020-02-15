@@ -27,7 +27,7 @@ public enum FloorState {
 	UNLOAD {
 		@Override
 		public FloorState next(Transition transition) {
-			return MAKE_REQUEST;
+			return INITIAL;
 		}
 	};
 
