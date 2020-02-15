@@ -21,7 +21,7 @@ public enum FloorState {
 	UNLOAD {
 		@Override
 		public FloorState next(Transition transition) {
-			return DECELERATING;
+			return TRAVEL;
 		}
 	};
 

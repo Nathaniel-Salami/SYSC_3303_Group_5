@@ -1,7 +1,7 @@
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.PriorityQueue;
+//import java.util.ArrayList;
+//import java.util.PriorityQueue;
 
 public class Elevator implements Runnable {
 
@@ -128,5 +128,18 @@ public class Elevator implements Runnable {
  
 	public void setState(ElevatorState state) {
 		this.state = state;
+	}
+	
+	public Event getPendingTask() {
+		return pendingTask;
+	}
+	
+	
+	public Event getCompletedTask() {
+		return completedTask;
+	}
+
+	public int getCurrentFloor() {
+		return currentFloor;
 	}
 }
