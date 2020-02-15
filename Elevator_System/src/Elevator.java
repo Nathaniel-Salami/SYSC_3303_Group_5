@@ -6,8 +6,7 @@ import java.time.format.DateTimeFormatter;
 /**
  * {@summary The elevator subsystem notifies the scheduler that an elevator has
  * reached a floor. Once an elevator has been told to move, the elevator
- * subsystem is informed so that it can send out messages back to the
- * scheduler.}
+ * subsystem is informed so that it can send out messages back to the scheduler.}
  */
 
 public class Elevator implements Runnable {
