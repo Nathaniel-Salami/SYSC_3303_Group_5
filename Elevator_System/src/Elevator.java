@@ -4,18 +4,24 @@ import java.time.format.DateTimeFormatter;
 //import java.util.PriorityQueue;
 import java.util.ArrayList;
 
+/**
+ * {@summary The elevator subsystem notifies the scheduler that an elevator has
+ * reached a floor. Once an elevator has been told to move, the elevator
+ * subsystem is informed so that it can send out messages back to the scheduler.}
+ */
+
 public class Elevator implements Runnable {
 
-	//private Scheduler scheduler;
-	//private PriorityQueue<Event> pendingTasks;
-	Event completedTask;
-	Event pendingTask;
+	// private Scheduler scheduler;
+	// private PriorityQueue<Event> pendingTasks;
 	private int currentFloor;
 	
-	private ElevatorState state;
-	ArrayList<ElevatorState> stateHistory;
+	private Event completedTask;
+	private Event pendingTask; // pending event for the elevator
+	private ElevatorState state; // state machine for the elevator subsystem
+	private ArrayList<ElevatorState> stateHistory;
 	
-	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+	private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
 	public Elevator() {
 		//scheduler = s;
@@ -30,7 +36,10 @@ public class Elevator implements Runnable {
 		stateHistory.add(state);
 		System.out.println("ELEVATOR STATE: " + state);
 	}
-	
+
+	/*
+	 * Helper function: Receives events from the scheduler
+	 */
 	public synchronized void recieveFLoorRequest(Event request) {
 		// stops elevator from doing more than 1 task, this can be changed later
 		
@@ -43,22 +52,26 @@ public class Elevator implements Runnable {
 			}
 		}
 		
-		/*try {
+		try {
 			if (Thread.currentThread().getName() == "Scheduler") 
 				Thread.sleep(500);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}*/
+		}
 		
 		changeState(Transition.CLOSE_DOORS);
-		
-		this.notifyAll();
-		
+
+		this.notifyAll(); // the elevator subsystem will notify the scheduler when an elevator has reached
+							// a floor
+
 		pendingTask = request;
 		
 	}
-	
-	public synchronized Event goToNextFloor() {		
+
+	/*
+	 * Helper function: Simulates travel with state transitions
+	 */
+	public synchronized Event goToNextFloor() {
 		completedTask = pendingTask;
 		
 		currentFloor = completedTask.getDestination();
@@ -75,7 +88,10 @@ public class Elevator implements Runnable {
 				
 		return completedTask;
 	}
-	
+
+	/*
+	 * Helper function: Notifies the scheduler when an elevator has reached a floor
+	 */
 	public synchronized Event reportCompletedTask() {
 		while (completedTask == null) {
 			try {
@@ -98,11 +114,14 @@ public class Elevator implements Runnable {
 		Event visited = completedTask;
 		completedTask = null;
 		
-		this.notifyAll();
+		this.notifyAll(); // the elevator notifies the scheduler when it has reached a floor
 		
 		return visited;
 	}
-	
+
+	/*
+	 * Helper function: Logs elevator states to the console
+	 */
 	public void log() {
 		// not sure why but this "un-freezes" the thread
 		try {
@@ -130,7 +149,10 @@ public class Elevator implements Runnable {
 			e.printStackTrace();
 		}*/
 	}
-	
+
+	/*
+	 * Run
+	 */
 	@Override
 	public void run() {		
 		while (true) {
@@ -146,6 +168,9 @@ public class Elevator implements Runnable {
 		}
 	}
 
+	/*
+	 * Get & set methods for class attributes
+	 */
 	public ElevatorState getState() {
 		return state;
 	}
@@ -165,5 +190,33 @@ public class Elevator implements Runnable {
 
 	public int getCurrentFloor() {
 		return currentFloor;
+	}
+
+	public ArrayList<ElevatorState> getStateHistory() {
+		return stateHistory;
+	}
+
+	public void setStateHistory(ArrayList<ElevatorState> stateHistory) {
+		this.stateHistory = stateHistory;
+	}
+
+	public DateTimeFormatter getDtf() {
+		return dtf;
+	}
+
+	public void setDtf(DateTimeFormatter dtf) {
+		this.dtf = dtf;
+	}
+
+	public void setCurrentFloor(int currentFloor) {
+		this.currentFloor = currentFloor;
+	}
+
+	public void setCompletedTask(Event completedTask) {
+		this.completedTask = completedTask;
+	}
+
+	public void setPendingTask(Event pendingTask) {
+		this.pendingTask = pendingTask;
 	}
 }

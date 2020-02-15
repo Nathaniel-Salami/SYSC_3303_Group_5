@@ -3,6 +3,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 
+/**
+ * {@summary The Scheduler is only being used as a communication channel from
+ * the Floor thread to the Elevator thread and back again.}
+ */
+
 public class Scheduler implements Runnable {
 
 	private Event pendingR; // Request received from floor
@@ -12,11 +17,11 @@ public class Scheduler implements Runnable {
 	
 	private final static int TIME = 300;
 	
-	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+	private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 	
-	SchedulerState state;
+	private SchedulerState state;
 	
-	ArrayList<SchedulerState> stateHistory;
+	private ArrayList<SchedulerState> stateHistory;
 
 	public Scheduler(Elevator elevator) {
 		pendingR = null;
@@ -31,7 +36,9 @@ public class Scheduler implements Runnable {
 		stateHistory.add(state);
 	}
 
-	// receive from Floor to Elevator
+	/*
+	 * Helper function: Receives button requests from the floor subsystem
+	 */
 	public synchronized void receiveFromFloor(Event fr) {
 		while (pendingR != null) {
 			try {
@@ -56,7 +63,9 @@ public class Scheduler implements Runnable {
 		changeState(Transition.RECEIVE);
 	}
 
-	// send to Floor from Elevator
+	/*
+	 * Helper function: Sends response of elevator arrivals to the floor subsystem
+	 */
 	public synchronized Event sendToFloor() {
 		while (pendingV == null) {
 			try {
@@ -84,6 +93,9 @@ public class Scheduler implements Runnable {
 		return temp;
 	}
 		
+	/*
+	 * Helper function: Sends floor button events to the elevator subsystem 
+	 */
 	public synchronized Event sendToElevator() {
 		Event temp = pendingR;
 		elevator.recieveFLoorRequest(pendingR);
@@ -96,6 +108,9 @@ public class Scheduler implements Runnable {
 		return temp;
 	}
 	
+	/*
+	 * Helper function: Receives response of completed events from the elevator subsystem
+	 */
 	public synchronized Event getNextCompletedTask() {		
 		Event completed = elevator.reportCompletedTask();
 		
@@ -134,6 +149,9 @@ public class Scheduler implements Runnable {
 		System.out.println("SCHEDULER STATE: " + state);
 	}
 
+	/*
+	 * Run
+	 */
 	@Override
 	public void run() {
 		
@@ -149,7 +167,7 @@ public class Scheduler implements Runnable {
 			}
 			
 			// get visited report from elevator
-			if (elevator.completedTask != null) {
+			if (elevator.getCompletedTask() != null) {
 				pendingV = getNextCompletedTask();
 				
 				LocalDateTime now = LocalDateTime.now();
@@ -158,6 +176,9 @@ public class Scheduler implements Runnable {
 		}
 	}
 
+	/*
+	 * Get & set methods for class attributes
+	 */
 	public Event getPendingR() {
 		return pendingR;
 	}
@@ -172,6 +193,42 @@ public class Scheduler implements Runnable {
 
 	public void setPendingV(Event pendingV) {
 		this.pendingV = pendingV;
+	}
+
+	public Elevator getElevator() {
+		return elevator;
+	}
+
+	public void setElevator(Elevator elevator) {
+		this.elevator = elevator;
+	}
+
+	public DateTimeFormatter getDtf() {
+		return dtf;
+	}
+
+	public void setDtf(DateTimeFormatter dtf) {
+		this.dtf = dtf;
+	}
+
+	public SchedulerState getState() {
+		return state;
+	}
+
+	public void setState(SchedulerState state) {
+		this.state = state;
+	}
+
+	public ArrayList<SchedulerState> getStateHistory() {
+		return stateHistory;
+	}
+
+	public void setStateHistory(ArrayList<SchedulerState> stateHistory) {
+		this.stateHistory = stateHistory;
+	}
+
+	public static int getTime() {
+		return TIME;
 	}
 	
 }
