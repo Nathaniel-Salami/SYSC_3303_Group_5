@@ -21,7 +21,9 @@ public class Scheduler implements Runnable {
 		this.elevator = elevator;
 	}
 
-	// receive from Floor to Elevator
+	/*
+	 * Helper function: Receives button requests from the floor subsystem
+	 */
 	public synchronized void receiveFromFloor(Event fr) {
 		while (pendingR != null) {
 			try {
@@ -44,7 +46,9 @@ public class Scheduler implements Runnable {
 		pendingR = fr;
 	}
 
-	// send to Floor from Elevator
+	/*
+	 * Helper function: Sends response of elevator arrivals to the floor subsystem
+	 */
 	public synchronized Event sendToFloor() {
 		while (pendingV == null) {
 			try {
@@ -70,6 +74,9 @@ public class Scheduler implements Runnable {
 		return temp;
 	}
 		
+	/*
+	 * Helper function: Sends floor button events to the elevator subsystem 
+	 */
 	public synchronized Event sendToElevator() {
 		Event temp = pendingR;
 		elevator.recieveFLoorRequest(pendingR);
@@ -80,6 +87,9 @@ public class Scheduler implements Runnable {
 		return temp;
 	}
 	
+	/*
+	 * Helper function: Receives response of completed events from the elevator subsystem
+	 */
 	public synchronized Event getNextCompletedTask() {		
 		Event completed = elevator.reportCompletedTask();
 		
@@ -88,6 +98,9 @@ public class Scheduler implements Runnable {
 		return completed;
 	}
 	
+	/*
+	 * Helper function: Adds sleep statement so logs are readable
+	 */
 	public void log() {
 		// not sure why but this "un-freezes" the thread
 		try {
@@ -100,6 +113,9 @@ public class Scheduler implements Runnable {
 		//System.out.println("SHEDULER = "+pendingR + " : " + pendingV);
 	}
 
+	/*
+	 * Run
+	 */
 	@Override
 	public void run() {
 		
@@ -124,6 +140,9 @@ public class Scheduler implements Runnable {
 		}
 	}
 
+	/*
+	 * Get & set methods for class attributes
+	 */
 	public Event getPendingR() {
 		return pendingR;
 	}
