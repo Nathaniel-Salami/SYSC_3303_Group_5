@@ -1,10 +1,9 @@
+package tests;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.PriorityQueue;
 
 import org.junit.jupiter.api.Test;
-
-import Storage.Event;
 
 class FloorTest {
 
@@ -14,9 +13,10 @@ class FloorTest {
 		
 		//test request
 		floorRequests.add(new Event("15:00:15:0 9 Down 1"));
-
-		Scheduler scheduler = new Scheduler();
+		Event event = floorRequests.peek();
 		
+		Elevator elevator = new Elevator();
+		Scheduler scheduler = new Scheduler(elevator);
 		Floor floor = new Floor(scheduler);
 		
 		// read floor request from file 
@@ -38,8 +38,9 @@ class FloorTest {
 		//simulate elevator 
 		scheduler.setPendingV(visited);
 		
-		floor.getFloorVisit();
+		Event visitRequest = floor.getFloorVisit();
 		
+		assertEquals(event,visitRequest);
 		assertTrue(floor.getPendingEventRequests().isEmpty());
 	}
 

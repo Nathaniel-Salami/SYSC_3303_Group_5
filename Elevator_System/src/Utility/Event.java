@@ -1,4 +1,5 @@
-package Storage;
+package Utility;
+
 
 public class Event implements Comparable<Event> {
 	
@@ -13,10 +14,12 @@ public class Event implements Comparable<Event> {
 		
 		if(tokens.length > 3) {
 			setTime(new Time(tokens[0]));
-			setFloor(Integer.parseInt(tokens[1]));
+			setFloor(Integer.parseInt(tokens[1].trim()));
 			getDirection(tokens[2]);
-			setDestination(Integer.parseInt(tokens[3]));
+			setDestination(Integer.parseInt(tokens[3].trim()));
 		}
+		
+		//System.out.println("added: " + this);
 	}
 	
 	private void getDirection(String dir) {
@@ -60,7 +63,7 @@ public class Event implements Comparable<Event> {
 	
 	@Override
 	public String toString() {
-		return String.format("%d:%d:%d:%d %d %s %d",time.getHour(),time.getMilisecond(),time.getSecond(),time.getMilisecond(),floor,direction.toString(),destination);
+		return String.format("%02d:%02d:%02d:%02d %02d %s %02d",time.getHour(),time.getMinute(),time.getSecond(),time.getMilisecond(),floor,direction.toString(),destination);
 	}
 
 	@Override

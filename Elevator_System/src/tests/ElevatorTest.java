@@ -1,8 +1,10 @@
+package tests;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-import Storage.Event;
+import Elevator.Elevator;
+import Scheduler.Scheduler;
 
 /**
  * 
@@ -16,9 +18,9 @@ class ElevatorTest {
 
 	@Test
 	void test() {
-		Scheduler scheduler = new Scheduler();
+		Elevator elevator = new Elevator();
+		Scheduler scheduler = new Scheduler(elevator);
 		
-		Elevator elevator = new Elevator(scheduler);
 		
 		//create test request
 		String request = "15:00:15:0 9 Down 1";
@@ -28,23 +30,25 @@ class ElevatorTest {
 		scheduler.setPendingR(event);
 		
 		// elevator starts with no tasks
-		assertTrue(elevator.getTasksEvent().isEmpty());
+		assertTrue(elevator.getPendingTask() == null);
 		
 		//retrieve task/request from scheduler
 		Event recieved = scheduler.sendToElevator();
-		elevator.getTasksEvent().add(recieved);
+		assertEquals(event, recieved);
 		
 		//elevator should have a new task
-		assertEquals(1, elevator.getTasksEvent().size());
+		assertFalse(elevator.getPendingTask() == null);
 		
 		//elevator goes to the floor 
 		Event visited = elevator.goToNextFloor();		
 		assertEquals(event, visited);
 		
 		//send completed task back to scheduler
-		scheduler.receiveFromElevator(visited);
+		Event completedRequest = scheduler.getNextCompletedTask();
 		
-		assertEquals(event, scheduler.getPendingV());
+		//Assert that the initial event from the Scheduler has been processed by the Elevator
+		assertEquals(event, completedRequest);
+		assertEquals(elevator.getCurrentFloor(), event.getDestination());
 	}
 
 }
