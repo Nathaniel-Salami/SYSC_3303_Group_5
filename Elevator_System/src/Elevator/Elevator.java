@@ -27,8 +27,6 @@ public class Elevator implements Runnable {
 	private Direction dir = Direction.Static;
 	private ElevatorState state; // state machine for the elevator subsystem
 	
-	private ArrayList<ElevatorState> stateHistory;
-	
 	private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 	
 	private DatagramPacket sendPacket, receivePacket;
@@ -39,10 +37,6 @@ public class Elevator implements Runnable {
 		
 		currentFloor = 0;
 		state = ElevatorState.getInitialState();
-		stateHistory = new ArrayList<>();
-		
-		//add initial state
-		stateHistory.add(state);
 		System.out.println("ELEVATOR STATE: " + state);
 		
 		try {
@@ -51,14 +45,6 @@ public class Elevator implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-	
-	/*
-	 * Helper function: Receives events from the scheduler
-	 */
-	public synchronized void recieveFLoorRequest(Direction dir, int numOfPassengers) {
-		// stops elevator from doing more than 1 task, this can be changed later	
-		this.dir = dir;
 	}
 
 	private boolean checkForStop() {
@@ -100,7 +86,7 @@ public class Elevator implements Runnable {
 	/*
 	 * Helper function: Simulates travel with state transitions
 	 */
-	public synchronized void goToNextFloor() {
+	private synchronized void goToNextFloor() {
 		
 		try {
 			state = ElevatorState.MOVING;
@@ -122,14 +108,7 @@ public class Elevator implements Runnable {
 		
 	}
 
-	/*
-	 * Helper function: Notifies the scheduler when an elevator has reached a floor
-	 */
-	public synchronized void rest() {
-		dir = Direction.Static;
-	}
-
-	public synchronized void stop() {
+	private synchronized void stop() {
 		
 		try {
 			state = ElevatorState.STOPPED;
@@ -143,7 +122,7 @@ public class Elevator implements Runnable {
 		}
 	}
 	
-	public synchronized void load(int numOfPassengers) {
+	private synchronized void load(int numOfPassengers) {
 		
 		try {
 			Thread.sleep(300 + numOfPassengers*700);
@@ -159,7 +138,7 @@ public class Elevator implements Runnable {
 	/*
 	 * Helper function: Logs elevator states to the console
 	 */
-	public void log() {
+	private void log() {
 		System.out.println("@" + dtf.format(LocalDateTime.now()) + ": " +Thread.currentThread().getName() + " on Floor:\t\t" + currentFloor + " "+state);
 	}
 
@@ -182,6 +161,7 @@ public class Elevator implements Runnable {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
 	}
 	
 	/*
@@ -237,47 +217,5 @@ public class Elevator implements Runnable {
 		e1.start();
 		//e2.start();
 	}
-	
-	/*
-	 * Get & set methods for class attributes
-	 */
-	public ElevatorState getState() {
-		return state;
-	}
- 
-	public void setState(ElevatorState state) {
-		this.state = state;
-	}
 
-	public int getCurrentFloor() {
-		return currentFloor;
-	}
-
-	public ArrayList<ElevatorState> getStateHistory() {
-		return stateHistory;
-	}
-
-	public void setStateHistory(ArrayList<ElevatorState> stateHistory) {
-		this.stateHistory = stateHistory;
-	}
-
-	public DateTimeFormatter getDtf() {
-		return dtf;
-	}
-
-	public void setDtf(DateTimeFormatter dtf) {
-		this.dtf = dtf;
-	}
-
-	public void setCurrentFloor(int currentFloor) {
-		this.currentFloor = currentFloor;
-	}
-	
-	public Direction getDirection() {
-		return dir;
-	}
-	
-	public void setDirection(Direction dir) {
-		this.dir = dir;
-	}
 }

@@ -7,14 +7,15 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.PriorityQueue;
 import java.util.Scanner;
 
 import Utility.Event;
 import Utility.Helper;
-import Utility.Transition;
 
 /**
  * {@summary The floor subsystem reads in events from the scheduler (time,
@@ -25,22 +26,20 @@ import Utility.Transition;
 public class Floor {
 	
 	public String name = "FLoor";
+	public static final String FILEPATH = "Elevator_System/floor-commands.txt";
+	
 	private final int SCHEDULER_PORT = 20;
 	
-	//Datagram Pakcets and Socket
-	DatagramPacket sendPacket, receivePacket;
-	DatagramSocket sendReceiveSocket;
+	//Datagram Packets and Socket
+	private DatagramPacket sendPacket, receivePacket;
+	private DatagramSocket sendReceiveSocket;
 	
-	public static final String FILEPATH = "Elevator_System/floor-commands.txt";
-
 	private PriorityQueue<Event> floorEventRequests;
 	private ArrayList<Event> pendingEventRequests;
+	private HashSet<Event> completedRequests;
 	
 	private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 	
-	private FloorState state;
-	private ArrayList<FloorState> stateHistory;
-
 	public Floor() {
 		
 		try {
@@ -50,14 +49,8 @@ public class Floor {
 			se.printStackTrace();
 			System.exit(1);
 		}
-		
-		//scheduler = s;
-		
-		state = FloorState.getInitialState();		
-		stateHistory = new ArrayList<FloorState>();
-		
-		//add initial state
-		stateHistory.add(state);
+		// events completed by the Elevator System
+		completedRequests = new HashSet<Event>();
 		
 		// event list for the floor subsystem
 		pendingEventRequests = new ArrayList<>();
@@ -83,7 +76,7 @@ public class Floor {
 		}
 	}
 	
-	public void sendAndReceive() {
+	private void sendAndReceive() {
 		// send a request
 		
 		Event event = makeFloorRequest();
@@ -122,17 +115,15 @@ public class Floor {
 	public static void main(String[] args) {
 		Floor floor = new Floor();
 		floor.sendAndReceive();
-		Thread t = new Thread(new SecondThread(),"Receive Thread");
+		Thread t = new Thread(new ReceiverThread(floor),"Receive Thread");
 		t.start();
 	}
 
 	/*
 	 * Helper function: Simulates all button presses (from data structure)
 	 */
-	public Event makeFloorRequest() {
+	private Event makeFloorRequest() {
 		if (!floorEventRequests.isEmpty()) {
-			
-			changeState(Transition.PRESS_BUTTON);
 			
 			Event fr = floorEventRequests.poll();
 			
@@ -159,73 +150,8 @@ public class Floor {
 		return null;
 	}
 
-	
-	public void changeState(Transition t) {
-		state = state.next(t);
-		stateHistory.add(state);
-		
-
-	}
-	
-	/*
-	 * Helper function: Adds sleep statement so logs are readable
-	 */
-	public void log() {
-		try {
-				Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-	
-	/*
-	 * Get & set methods for class attributes
-	 */
-
-	public PriorityQueue<Event> getFloorEventRequests() {
-		return floorEventRequests;
-	}
-
-	public void setFloorEventRequests(PriorityQueue<Event> floorEventRequests) {
-		this.floorEventRequests = floorEventRequests;
-	}
-
-	public ArrayList<Event> getPendingEventRequests() {
-		return pendingEventRequests;
-	}
-
-	public void setPendingEventRequests(ArrayList<Event> pendingEventRequests) {
-		this.pendingEventRequests = pendingEventRequests;
-	}
-
-	public DateTimeFormatter getDtf() {
-		return dtf;
-	}
-
-	public void setDtf(DateTimeFormatter dtf) {
-		this.dtf = dtf;
-	}
-
-	public FloorState getState() {
-		return state;
-	}
-
-	public void setState(FloorState state) {
-		this.state = state;
-	}
-
-	public ArrayList<FloorState> getStateHistory() {
-		return stateHistory;
-	}
-
-	public void setStateHistory(ArrayList<FloorState> stateHistory) {
-		this.stateHistory = stateHistory;
-	}
-
-	public static String getFilepath() {
-		return FILEPATH;
+	public synchronized void completeRequest(Event event) {
+		System.out.println("@" + dtf.format(LocalDateTime.now()) + ": " +"Request Completed:" + event);
+		completedRequests.add(event);
 	}
 }

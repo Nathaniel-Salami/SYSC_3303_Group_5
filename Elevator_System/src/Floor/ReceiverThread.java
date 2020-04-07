@@ -4,14 +4,16 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
 import Utility.Event;
-import Utility.Helper;
 
-public class SecondThread implements Runnable {
+public class ReceiverThread implements Runnable {
 
-	DatagramSocket socket;
-	DatagramPacket packet;
+	private DatagramSocket socket;
+	private DatagramPacket packet;
 	
-	public SecondThread() {
+	private Floor floorSystem;
+	
+	public ReceiverThread(Floor floor) {
+		floorSystem = floor;
 		try {
 			socket = new DatagramSocket(43);
 		}catch (Exception e) {
@@ -30,7 +32,7 @@ public class SecondThread implements Runnable {
 				// TODO: handle exception
 			}
 			Event ev =  new Event(new String(packet.getData()).trim());
-			System.out.printf("(%s)Packer Received: %s \n",Helper.nowTime(),ev);
+			floorSystem.completeRequest(ev);
 		}
 		
 	}

@@ -18,7 +18,7 @@ public class ArrivalThread implements Runnable {
 		}catch(Exception e) {}
 	}
 	
-	public void sendCompletedRequest() {
+	private void sendCompletedRequest() {
 		Event event = scheduler.requests.getFinishedRequest();
 		byte msg[] = event.toString().getBytes();
 		try {
