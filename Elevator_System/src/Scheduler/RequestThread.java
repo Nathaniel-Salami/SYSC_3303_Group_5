@@ -46,7 +46,8 @@ public class RequestThread implements Runnable {
 	public void run() {
 		while(true) {
 			Event req = receiveRequest();
-			scheduler.requests.addPendingRequest(req);
+			if(req.getFloor() >= scheduler.lowest && req.getFloor() <= scheduler.highest && req.getDestination() >= scheduler.lowest && req.getDestination() <= scheduler.highest)
+				scheduler.requests.addPendingRequest(req);
 			respond();
 		}
 	}

@@ -1,47 +1,27 @@
 package tests;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.PriorityQueue;
 
 import org.junit.jupiter.api.Test;
 
-class FloorTest {
+import Floor.Floor;
+import Utility.Event;
+
+class FloorCreateRequestTest {
 
 	@Test
 	void test() {
 		PriorityQueue<Event> floorRequests = new PriorityQueue<Event>();
 		
-		//test request
+		//test request		
 		floorRequests.add(new Event("15:00:15:0 9 Down 1"));
 		Event event = floorRequests.peek();
+		Floor floor = new Floor();
+		floor.setFloorEventReq(floorRequests);
 		
-		Elevator elevator = new Elevator();
-		Scheduler scheduler = new Scheduler(elevator);
-		Floor floor = new Floor(scheduler);
+		assertTrue(event == floor.makeFloorRequest());
 		
-		// read floor request from file 
-		floor.setFloorEventRequests(floorRequests);
-		
-		// send floor request to elevator
-		Event fr = floor.makeFloorRequest();
-		scheduler.receiveFromFloor(fr);
-		
-		//no more floor requests
-		assertTrue(floor.getFloorEventRequests().isEmpty());
-		
-		//floor request is now pending
-		assertFalse(floor.getPendingEventRequests().isEmpty());
-		
-		// receive floor visited from elevator
-		Event visited = scheduler.sendToElevator();
-		
-		//simulate elevator 
-		scheduler.setPendingV(visited);
-		
-		Event visitRequest = floor.getFloorVisit();
-		
-		assertEquals(event,visitRequest);
-		assertTrue(floor.getPendingEventRequests().isEmpty());
 	}
-
 }

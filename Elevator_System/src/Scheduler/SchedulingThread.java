@@ -39,10 +39,13 @@ public class SchedulingThread implements Runnable {
 			
 			for(int j = 0; j < scheduler.prioMap.size();j++) {
 				if(scheduler.prioMap.get(j).getValue().isEmpty() && !scheduler.prioMap.get(j).getKey().inUse) {
+
 					float cost = costFunction(scheduler.prioMap.get(j).getKey(), request);
+					System.out.println(scheduler.prioMap.get(j).getKey().getFloor() + " "+ cost);
 					if(cost < min) {
-						index = i;
+						index = j;
 						min = cost;
+						System.out.println(index);
 					}
 				}
 			}

@@ -76,7 +76,7 @@ public class Floor {
 		}
 	}
 	
-	private void sendAndReceive() {
+	public void sendAndReceive() {
 		// send a request
 		
 		Event event = makeFloorRequest();
@@ -122,7 +122,7 @@ public class Floor {
 	/*
 	 * Helper function: Simulates all button presses (from data structure)
 	 */
-	private Event makeFloorRequest() {
+	public Event makeFloorRequest() {
 		if (!floorEventRequests.isEmpty()) {
 			
 			Event fr = floorEventRequests.poll();
@@ -153,5 +153,19 @@ public class Floor {
 	public synchronized void completeRequest(Event event) {
 		System.out.println("@" + dtf.format(LocalDateTime.now()) + ": " +"Request Completed:" + event);
 		completedRequests.add(event);
+	}
+	
+	public void setPendingReq(ArrayList<Event> arr) {
+		if(arr != null)
+			pendingEventRequests = arr;
+	}
+	
+	public void setFloorEventReq(PriorityQueue<Event> arr) {
+		if(arr != null)
+			floorEventRequests = arr;
+	}
+	
+	public HashSet<Event> getCompletedReq() {
+		return completedRequests;
 	}
 }

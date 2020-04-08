@@ -1,5 +1,6 @@
 package Utility;
 
+import Scheduler.ElevatorRepresentation;
 
 public class Event implements Comparable<Event> {
 	
@@ -72,4 +73,21 @@ public class Event implements Comparable<Event> {
 
 	}
 	
+	@Override
+	public boolean equals(Object o) { 
+		if(o == this) return true;
+		 
+		if(o instanceof Event) {
+			Event e = ((Event) o);
+			
+			if(e.time.equals(time))
+				return true;
+			
+			return toString().trim().equals(o.toString().trim());
+		}
+		
+
+		
+		return false; 
+	}
 }

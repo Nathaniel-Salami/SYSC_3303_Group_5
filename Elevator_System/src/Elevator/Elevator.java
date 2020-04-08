@@ -1,5 +1,7 @@
 package Elevator;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -164,6 +166,14 @@ public class Elevator implements Runnable {
 		
 	}
 	
+	public int getFloor() {
+		return currentFloor;
+	}
+	
+	public Direction getDir() {
+		return dir;
+	}
+	
 	/*
 	 * Run
 	 */
@@ -209,13 +219,30 @@ public class Elevator implements Runnable {
 
 
 	public static void main(String[] args) {
-		Thread e1,e2;
-
-		e1 = new Thread(new Elevator("Elevator1",(int) (Math.random()*1000)));
-		//e2 = new Thread(new Elevator("Elevator2",(int) (Math.random()*1000)));
 		
-		e1.start();
-		//e2.start();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in)); 
+        
+        int n = 0;
+        while(true) {
+            System.out.print("Ënter Number of Elevators: ");
+            int num = -1;
+        	try {
+				String line = reader.readLine();
+				num  = Integer.parseInt(line);
+			} catch (Exception e) {
+				System.out.println("Invalid Input");
+			}
+        	if(num >= 0) {
+        		n = num;
+        		break;
+        	}
+        }
+        
+        for(int i = 0; i < n;i++) {
+			Thread e1;
+			e1 = new Thread(new Elevator("Elevator" + i,(int) (Math.random()*1000)));
+			e1.start();
+        }
 	}
 
 }

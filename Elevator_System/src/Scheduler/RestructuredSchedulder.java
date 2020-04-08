@@ -11,8 +11,11 @@ public class RestructuredSchedulder {
 	Requests requests;
 	protected ArrayList<SimpleEntry<ElevatorRepresentation, ArrayList<Event>>> prioMap;
 	protected InetAddress floor;
+	int lowest,highest;
 	
-	public RestructuredSchedulder() {
+	public RestructuredSchedulder(int lowest, int highest) {
+		this.lowest = lowest;
+		this.highest = highest;
 		requests = new Requests();
 		prioMap = new ArrayList<>();
 	}
@@ -64,4 +67,12 @@ public class RestructuredSchedulder {
 		return null;
 	}
 	
+	
+	public Requests getRequests() {
+		return requests;
+	}
+	
+	public ArrayList<SimpleEntry<ElevatorRepresentation, ArrayList<Event>>> getElevatorMap(){
+		return prioMap;
+	}
 }

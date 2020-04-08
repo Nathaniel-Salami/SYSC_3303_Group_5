@@ -46,4 +46,16 @@ public class ElevatorRepresentation {
 		 
 		return false; 
 	}
+	
+	public int getFloor() {
+		return floor;
+	}
+	
+	public Direction getDir() {
+		return dir;
+	}	
+	
+	public boolean isUsed() {
+		return inUse;
+	}
 }
