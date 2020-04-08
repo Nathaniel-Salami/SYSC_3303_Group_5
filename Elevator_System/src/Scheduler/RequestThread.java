@@ -3,6 +3,7 @@ package Scheduler;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
+import Utility.Direction;
 import Utility.Event;
 
 public class RequestThread implements Runnable {
@@ -47,7 +48,8 @@ public class RequestThread implements Runnable {
 		while(true) {
 			Event req = receiveRequest();
 			if(req.getFloor() >= scheduler.lowest && req.getFloor() <= scheduler.highest && req.getDestination() >= scheduler.lowest && req.getDestination() <= scheduler.highest)
-				scheduler.requests.addPendingRequest(req);
+				if(req.getFloor() > req.getDestination() && req.getDirection() == Direction.Down ||req.getFloor() < req.getDestination() && req.getDirection() == Direction.Up ) 
+					scheduler.requests.addPendingRequest(req);
 			respond();
 		}
 	}
